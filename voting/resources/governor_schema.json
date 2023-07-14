@@ -1,0 +1,39 @@
+{
+  "name": "Governor",
+  "entrypoints": [
+    {
+      "name": "init",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "name",
+          "ty": "String"
+        }
+      ],
+      "return_ty": "Unit"
+    },
+    {
+      "name": "new_proposal",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "statement",
+          "ty": "String"
+        }
+      ],
+      "return_ty": "Unit"
+    },
+    {
+      "name": "get_rpoposal",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "id",
+          "ty": "U64"
+        }
+      ],
+      "return_ty": "Any"
+    }
+  ],
+  "events": []
+}
