@@ -1,8 +1,0 @@
-[[contracts]]
-name = "flipper"
-fqn = "voting::Flipper"
-
-[[contracts]]
-name = "governor"
-fqn = "voting::governor::Governor"
-

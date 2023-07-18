@@ -1,2 +1,0 @@
-- create proposal through client
-- query proposals dict fro client side

@@ -24,7 +24,7 @@
       "return_ty": "Unit"
     },
     {
-      "name": "get_rpoposal",
+      "name": "get_proposal",
       "is_mutable": true,
       "args": [
         {
@@ -33,6 +33,17 @@
         }
       ],
       "return_ty": "Any"
+    },
+    {
+      "name": "vote_for",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "id",
+          "ty": "U64"
+        }
+      ],
+      "return_ty": "Unit"
     }
   ],
   "events": []
