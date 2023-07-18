@@ -31,7 +31,7 @@ async fn get_proposal(
     .await
     .map_err(|_| error::ErrorInternalServerError("Failed to query proposal from chain"))?;
 
-    Ok(HttpResponse::Ok().json(result))
+    Ok(HttpResponse::Ok().json(ProposalDTO::from(result)))
 }
 
 #[get("/proposals")]
@@ -54,6 +54,21 @@ async fn all_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl R
     Ok(HttpResponse::Ok().json(result))
 }
 
+#[get("debug/proposals")]
+async fn debug_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
+    let mut proposals = ProposalsDTO::empty();
+    for n in 0..=4 {
+        proposals.add(ProposalDTO {
+            id: n,
+            statement: format!("Proposal #{}", n),
+            yea: n.try_into().unwrap(),
+            nay: 0,
+        });
+    }
+
+    Ok(HttpResponse::Ok().json(proposals))
+}
+
 struct ClientState {
     contract_hash: String,
 }
@@ -64,6 +79,7 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::permissive();
         // App::new().wrap(cors).service(new_proposal)
         App::new()
+            .wrap(cors)
             .app_data(web::Data::new(ClientState {
                 contract_hash: String::from(
                     "hash-ca2c162c3b3048721341615e64de97d937e6c3d394ab465fa1ec07d97c4db7c5",
@@ -71,8 +87,7 @@ async fn main() -> std::io::Result<()> {
             }))
             .service(get_proposal)
             .service(all_proposals)
-        // .route("/get", web::get().to(get_proposal))
-        // .route("/new/{text}", web::get().to(new_proposal))
+            .service(debug_proposals)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

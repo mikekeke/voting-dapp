@@ -1,0 +1,7 @@
+// export const Wallet: React.FC<{
+//   pubKey: ICurrentKey
+// }> = ({ pubKey }) => {
+//   return (
+//     <h2> Todos {pubKey.pubKey}</h2>
+//   )
+// };

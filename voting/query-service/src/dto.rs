@@ -5,10 +5,10 @@ use contracts::types::Proposal;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProposalDTO {
-    id: u64,
-    statement: String,
-    yea: u32,
-    nay: u32,
+    pub id: u64,
+    pub statement: String,
+    pub yea: u32,
+    pub nay: u32,
 }
 
 impl From<Proposal> for ProposalDTO {
