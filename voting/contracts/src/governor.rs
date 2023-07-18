@@ -2,40 +2,21 @@ use odra::{
     execution_error, types::Address, Mapping, OdraType, Sequence, UnwrapOrRevert, Variable,
 };
 
+use crate::types::*;
+
 #[odra::module]
 pub struct Governor {
     ids_gen: Sequence<ProposalId>,
-    owner: Variable<Address>,
+    admin: Variable<Address>,
     name: Variable<String>,
     proposals: Mapping<ProposalId, Proposal>,
-    // To track who voted already
-    voters_registry: Mapping<(ProposalId, Address), ()>,
-}
-
-pub type ProposalId = u64;
-
-#[derive(OdraType, Debug, PartialEq, Eq)]
-pub struct Proposal {
-    pub id: ProposalId,
-    pub statement: String,
-    pub yea: u32,
-    pub nay: u32,
-}
-
-impl Proposal {
-    fn new(id: ProposalId, statement: String) -> Self {
-        Proposal {
-            id,
-            statement,
-            yea: 0,
-            nay: 0,
-        }
-    }
+    voters_registry: Mapping<(ProposalId, Address), Vote>,
 }
 
 execution_error! {
   pub enum Error {
-      OnlyOwnerCanRegProposal => 1,
+      AddressAlreadyVoted => 0,
+      ProposalDoesNotExist => 1
   }
 }
 
@@ -43,84 +24,145 @@ execution_error! {
 impl Governor {
     #[odra(init)]
     pub fn init(&mut self, name: String) {
-        self.owner.set(odra::contract_env::caller());
+        self.admin.set(odra::contract_env::caller());
         self.name.set(name);
     }
 
-    pub fn new_proposal(&mut self, statement: String) {
-        let caller = odra::contract_env::caller();
-        if caller != self.owner.get().unwrap_or_revert() {
-            odra::contract_env::revert(Error::OnlyOwnerCanRegProposal)
-        }
+    pub fn get_name(&self) -> String {
+        self.name.get().unwrap_or_revert()
+    }
 
+    pub fn new_proposal(&mut self, statement: String) {
         let next_id = self.ids_gen.next_value();
         self.proposals
             .set(&next_id, Proposal::new(next_id, statement))
     }
 
-    pub fn get_proposal(&mut self, id: ProposalId) -> Proposal {
-        self.proposals.get(&id).unwrap_or_revert()
+    pub fn get_proposal(&mut self, proposal_id: ProposalId) -> Proposal {
+        self.proposals
+            .get(&proposal_id)
+            .unwrap_or_revert_with(Error::ProposalDoesNotExist)
     }
 
-    //todo factor out common code
-    pub fn vote_for(&mut self, id: ProposalId) {
-        let proposal = self.proposals.get(&id).unwrap_or_revert(); //todo custom error
-        self.register_caller(id, caller);
-        will call self.ensure_did_not_vote(id, caller);
-
-        let proposal = Proposal {
-            yea: proposal.yea + 1,
-            ..proposal
-        };
-        
-        self.proposals.set(&id, proposal);
+    pub fn vote_for(&mut self, proposal_id: ProposalId) {
+        self.vote(proposal_id, Vote::Yea)
     }
 
-    pub fn vote_against(&mut self, id: ProposalId) {
-        let proposal = self.proposals.get(&id).unwrap_or_revert(); //todo custom error
-        self.register_caller(id, caller);
-        will call self.ensure_did_not_vote(id, caller);
+    pub fn vote_against(&mut self, proposal_id: ProposalId) {
+        self.vote(proposal_id, Vote::Nay)
+    }
 
-        let proposal = Proposal {
-            yea: proposal.yea - 1,
-            ..proposal
+    fn vote(&mut self, proposal_id: ProposalId, vote: Vote) {
+        let caller = odra::contract_env::caller();
+        let registry_key = (proposal_id, caller);
+
+        match self.voters_registry.get(&registry_key) {
+            Some(_) => odra::contract_env::revert(Error::AddressAlreadyVoted),
+            None => self.voters_registry.set(&registry_key, vote.clone()),
+        }
+
+        let proposal = self.get_proposal(proposal_id);
+
+        let proposal = match vote {
+            Vote::Yea => Proposal {
+                yea: proposal.yea + 1,
+                ..proposal
+            },
+            Vote::Nay => Proposal {
+                nay: proposal.nay + 1,
+                ..proposal
+            },
         };
-        self.proposals.set(&id, proposal);
+        self.proposals.set(&proposal_id, proposal)
+    }
+
+    fn register_caller(&mut self, proposal_id: ProposalId, caller: Address, vote: Vote) {
+        let key = (proposal_id, caller);
+        match self.voters_registry.get(&key) {
+            Some(_) => odra::contract_env::revert(Error::AddressAlreadyVoted),
+            None => self.voters_registry.set(&key, vote),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use odra::test_env;
+    use odra::{test_env, types::Address};
+
+    use crate::{governor::Error, GovernorRef};
 
     use super::{GovernorDeployer, Proposal};
 
-    #[test]
-    fn mk_proposal() {
+    const TEST_NAME: &str = "Test Name";
+
+    fn deploy_new() -> (Address, GovernorRef) {
         let admin = test_env::get_account(0);
         test_env::set_caller(admin);
-        let mut gov_contract = GovernorDeployer::init("test gov".to_string());
+        let mut gov_contract = GovernorDeployer::init(TEST_NAME.to_string());
+        (admin, gov_contract)
+    }
 
-        // let report = test_env::gas_report();
-        // panic!("Report: {:#?}", report);
+    #[test]
+    fn deploy() {
+        let (admin, mut contract) = deploy_new();
+        assert_eq!(TEST_NAME.to_string(), contract.get_name());
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, || {
+            contract.get_proposal(0);
+        });
+    }
 
-        let prop_text = "test proposal".to_string();
-        gov_contract.new_proposal(prop_text.clone());
-        let p1 = gov_contract.get_proposal(0);
-        let prop = Proposal {
+    #[test]
+    fn new_proposal() {
+        let (admin, mut contract) = deploy_new();
+        let user_1 = test_env::get_account(1);
+
+        test_env::set_caller(user_1);
+        let statement = String::from("Do Something");
+        contract.new_proposal(statement.clone());
+
+        let expected = Proposal {
             id: 0,
-            statement: prop_text.clone(),
+            statement: statement,
             yea: 0,
             nay: 0,
         };
-        assert_eq!(prop, p1);
+
+        assert_eq!(expected, contract.get_proposal(0));
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, || {
+            contract.get_proposal(1);
+        })
     }
 
-    // #[test]
-    // fn try_stuff() {
-    //     let gov_hash = "9f7073337f997130ae63f875f7b31e299d9c253f169a1a8cb01f4b722d209274";
-    //     // let bytes: [u8] = decode(gov_hash).unwrap()[..];
-    //     // let gov_address = Address::from(bytes);
-    //     // panic!("{:#?}", gov_address)
-    // }
+    #[test]
+    fn vote() {
+        let (admin, mut contract) = deploy_new();
+        let user_1 = test_env::get_account(1);
+        let user_2 = test_env::get_account(2);
+        contract.new_proposal(String::from("Some proposal"));
+
+        test_env::set_caller(user_1);
+        contract.vote_for(0);
+        odra::test_env::assert_exception(Error::AddressAlreadyVoted, ||{
+            contract.vote_against(0)
+        });
+        odra::test_env::assert_exception(Error::AddressAlreadyVoted, ||{
+            contract.vote_against(0)
+        });
+
+        test_env::set_caller(user_2);
+        contract.vote_against(0);
+
+        let expected = Proposal {
+            id: 0,
+            statement: String::from("Some proposal"),
+            yea: 1,
+            nay: 1,
+        };
+        assert_eq!(expected, contract.get_proposal(0));
+
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, ||{
+            contract.vote_against(1)
+        });
+
+    }
 }

@@ -11,14 +11,8 @@ use contracts::governor::GovernorDeployer;
 const DEPLOY_COST: u64 = 110_000_000_000u64;
 
 fn main() {
+    //todo: get name from CLI
+    let name = String::from("test name");
     client_env::set_gas(DEPLOY_COST);
-    let mut gov_contract = GovernorDeployer::init("test".to_string());
-    //TODO save hash somehow to load it to the client later
-
-    // DEBUG
-    client_env::set_gas(110_000_000_000u64);
-    gov_contract.new_proposal("LOL proposal".to_string());
-
-    let p = gov_contract.get_proposal(0);
-    println!("Prop: {:#?}", p)
+    let mut gov_contract = GovernorDeployer::init(name);
 }

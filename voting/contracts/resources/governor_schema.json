@@ -39,7 +39,18 @@
       "is_mutable": true,
       "args": [
         {
-          "name": "id",
+          "name": "proposal_id",
+          "ty": "U64"
+        }
+      ],
+      "return_ty": "Unit"
+    },
+    {
+      "name": "vote_against",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "proposal_id",
           "ty": "U64"
         }
       ],
