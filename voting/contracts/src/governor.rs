@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn new_proposal() {
+    fn create_and_get_proposal() {
         let (admin, mut contract) = deploy_new();
         let user_1 = test_env::get_account(1);
 
@@ -162,6 +162,10 @@ mod tests {
 
         odra::test_env::assert_exception(Error::ProposalDoesNotExist, ||{
             contract.vote_against(1)
+        });
+
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, ||{
+            contract.vote_for(1)
         });
 
     }
