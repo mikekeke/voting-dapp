@@ -4,6 +4,7 @@ import './App.css';
 // import { Wallet } from './Wallet';
 import { Proposals } from './Proposals';
 import {ICurrentKey} from './AppTypes'
+import { Wallet } from './Wallet';
 // import Wallet from './Wallet';
 
 
@@ -11,15 +12,20 @@ import {ICurrentKey} from './AppTypes'
 function App() {
   const [pubKey, setPubKey] = useState<ICurrentKey>({ pubKey: undefined });
 
+  const setKey = (keyHash: string) => {
+    setPubKey({pubKey: keyHash})
+  }
+
   return (
     <div className="App">
-      {/* <Wallet pubKey={pubKey} /> */}
+      <p>Current key: {pubKey.pubKey}</p>
+      <Wallet 
+        pubKey={pubKey}
+        setKey={setKey}
+        />
       <Proposals/>
     </div>
   );
 }
 
-
-
 export default App;
-
