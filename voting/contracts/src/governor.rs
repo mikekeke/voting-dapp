@@ -1,5 +1,5 @@
 use odra::{
-    execution_error, types::Address, Mapping, OdraType, Sequence, UnwrapOrRevert, Variable,
+    execution_error, types::Address, List, Mapping, OdraType, Sequence, UnwrapOrRevert, Variable,
 };
 
 use crate::types::*;
@@ -11,6 +11,7 @@ pub struct Governor {
     name: Variable<String>,
     proposals: Mapping<ProposalId, Proposal>,
     voters_registry: Mapping<(ProposalId, Address), Vote>,
+    all_proposals: List<ProposalId>,
 }
 
 execution_error! {
@@ -35,13 +36,18 @@ impl Governor {
     pub fn new_proposal(&mut self, statement: String) {
         let next_id = self.ids_gen.next_value();
         self.proposals
-            .set(&next_id, Proposal::new(next_id, statement))
+            .set(&next_id, Proposal::new(next_id, statement));
+        self.all_proposals.push(next_id);
     }
 
     pub fn get_proposal(&mut self, proposal_id: ProposalId) -> Proposal {
         self.proposals
             .get(&proposal_id)
             .unwrap_or_revert_with(Error::ProposalDoesNotExist)
+    }
+
+    pub fn last_proposal_id(&self) -> ProposalId {
+        self.ids_gen.get_current_value()
     }
 
     pub fn vote_for(&mut self, proposal_id: ProposalId) {
@@ -142,12 +148,8 @@ mod tests {
 
         test_env::set_caller(user_1);
         contract.vote_for(0);
-        odra::test_env::assert_exception(Error::AddressAlreadyVoted, ||{
-            contract.vote_against(0)
-        });
-        odra::test_env::assert_exception(Error::AddressAlreadyVoted, ||{
-            contract.vote_against(0)
-        });
+        odra::test_env::assert_exception(Error::AddressAlreadyVoted, || contract.vote_against(0));
+        odra::test_env::assert_exception(Error::AddressAlreadyVoted, || contract.vote_against(0));
 
         test_env::set_caller(user_2);
         contract.vote_against(0);
@@ -160,13 +162,20 @@ mod tests {
         };
         assert_eq!(expected, contract.get_proposal(0));
 
-        odra::test_env::assert_exception(Error::ProposalDoesNotExist, ||{
-            contract.vote_against(1)
-        });
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, || contract.vote_against(1));
 
-        odra::test_env::assert_exception(Error::ProposalDoesNotExist, ||{
-            contract.vote_for(1)
-        });
+        odra::test_env::assert_exception(Error::ProposalDoesNotExist, || contract.vote_for(1));
+    }
 
+    #[test]
+    fn proposal_ids() {
+        let (admin, mut contract) = deploy_new();
+        let n = 3;
+        for idx in 0..=n {
+            println!("V: {}", idx);
+            contract.new_proposal(format!("Proposal #{}", idx))
+        }
+
+        assert_eq!(3, contract.last_proposal_id())
     }
 }

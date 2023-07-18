@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 
-use contracts::Proposal;
+use contracts::types::Proposal;
 
 #[derive(Serialize, Deserialize)]
 pub struct ProposalDTO {
@@ -19,5 +19,20 @@ impl From<Proposal> for ProposalDTO {
             yea: p.yea,
             nay: p.nay,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ProposalsDTO {
+    proposals: Vec<ProposalDTO>
+}
+
+impl ProposalsDTO {
+
+    pub fn empty() -> Self {
+        ProposalsDTO { proposals: Vec::new() }
+    }
+    pub fn add(&mut self, proposal: ProposalDTO) {
+        self.proposals.push(proposal)
     }
 }

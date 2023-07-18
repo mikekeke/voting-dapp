@@ -20,5 +20,8 @@ test-w-mock-vm:
 test-w-casper:
 	cd contracts && cargo odra test -b casper
 
-start-query-service:
+run-query-service:
 	cd query-service && cargo run
+
+build-query-service:
+	cd query-service && cargo build

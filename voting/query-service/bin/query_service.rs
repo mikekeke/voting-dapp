@@ -8,12 +8,15 @@ use std::str::FromStr;
 
 use actix_cors::Cors;
 use actix_web::{error, get, post, web, App, HttpResponse, HttpServer, Responder};
-use contracts::{governor::{GovernorDeployer, ProposalId}, GovernorRef};
+use contracts::{
+    governor::{GovernorDeployer, GovernorRef},
+    types::ProposalId,
+};
 use log::{info, trace, warn};
 
-use query_service::dto::ProposalDTO;
+use query_service::dto::{ProposalDTO, ProposalsDTO};
 
-#[get("/query/{proposal_id}")]
+#[get("/proposal/{proposal_id}")]
 async fn get_proposal(
     info: web::Path<u64>,
     data: web::Data<ClientState>,
@@ -28,7 +31,26 @@ async fn get_proposal(
     .await
     .map_err(|_| error::ErrorInternalServerError("Failed to query proposal from chain"))?;
 
-    let result = serde_json::to_string(&ProposalDTO::from(result))?;
+    Ok(HttpResponse::Ok().json(result))
+}
+
+#[get("/proposals")]
+async fn all_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
+    let result = web::block(move || {
+        let gov_addr = Address::from_str(data.contract_hash.clone().as_str()).unwrap();
+        let mut gov = GovernorDeployer::register(gov_addr);
+
+        let num_of_proposals = gov.last_proposal_id();
+        let mut proposals = ProposalsDTO::empty();
+        for n in 0..=num_of_proposals {
+            proposals.add(ProposalDTO::from(gov.get_proposal(n)));
+        }
+
+        proposals
+    })
+    .await
+    .map_err(|_| error::ErrorInternalServerError("Failed to query proposals from chain"))?;
+
     Ok(HttpResponse::Ok().json(result))
 }
 
@@ -44,10 +66,11 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(ClientState {
                 contract_hash: String::from(
-                    "hash-73f8ee4eec4d758685a55f656aa6fd9df794b46f9ca20002a2b58796d92d3d36",
+                    "hash-ca2c162c3b3048721341615e64de97d937e6c3d394ab465fa1ec07d97c4db7c5",
                 ),
             }))
             .service(get_proposal)
+            .service(all_proposals)
         // .route("/get", web::get().to(get_proposal))
         // .route("/new/{text}", web::get().to(new_proposal))
     })
