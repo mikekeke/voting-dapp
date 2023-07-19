@@ -1,14 +1,10 @@
 import { useEffect } from 'react';
 import { ICurrentKey } from './AppTypes'
 
-declare global {
-  interface Window {
-    CasperWalletProvider: any;
-  }
-}
-const CasperWalletProvider = window.CasperWalletProvider;
 
-const provider = CasperWalletProvider();
+// const CasperWalletProvider = window.CasperWalletProvider;
+
+// const provider = CasperWalletProvider();
 
 export const Wallet: React.FC<{
   pubKey: ICurrentKey,
@@ -20,11 +16,11 @@ export const Wallet: React.FC<{
   )
 
   async function connect() {
-    const connected: boolean = await provider.requestConnection();
-    if (!connected) {
-      throw new Error("Could not connect to wallet")
-    }
-    const keyHash: string = await provider.getActivePublicKey();
-    setKey(keyHash)
+    // const connected: boolean = await provider.requestConnection();
+    // if (!connected) {
+    //   throw new Error("Could not connect to wallet")
+    // }
+    // const keyHash: string = await provider.getActivePublicKey();
+    // setKey(keyHash)
   }
 };

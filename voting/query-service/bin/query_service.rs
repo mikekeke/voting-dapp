@@ -82,7 +82,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .app_data(web::Data::new(ClientState {
                 contract_hash: String::from(
-                    "hash-ca2c162c3b3048721341615e64de97d937e6c3d394ab465fa1ec07d97c4db7c5",
+                    "hash-741dd8c03f61783496a001a569ba5a1bd1d87927ec69d00dcc271332bb45423c",
                 ),
             }))
             .service(get_proposal)

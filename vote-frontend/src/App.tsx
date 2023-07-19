@@ -5,9 +5,14 @@ import './App.css';
 import { Proposals } from './Proposals';
 import {ICurrentKey} from './AppTypes'
 import { Wallet } from './Wallet';
+import { Vote } from './Vote';
 // import Wallet from './Wallet';
 
-
+declare global {
+  interface Window {
+    CasperWalletProvider: any;
+  }
+}
 
 function App() {
   const [pubKey, setPubKey] = useState<ICurrentKey>({ pubKey: undefined });
@@ -23,6 +28,7 @@ function App() {
         pubKey={pubKey}
         setKey={setKey}
         />
+      <Vote pubKey={pubKey}/>
       <Proposals/>
     </div>
   );

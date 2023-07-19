@@ -8,7 +8,8 @@ export const Proposals: React.FC<{}> = () => {
 
   useEffect(() => {
     async function getProposals() {
-      const resp = await axios.get<IProposals>("http://localhost:8080/debug/proposals");
+      // const resp = await axios.get<IProposals>("http://localhost:8080/debug/proposals");
+      const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
       // const data = await resp.js
       console.log("--------------------")
       console.log(resp.data)
@@ -22,7 +23,7 @@ export const Proposals: React.FC<{}> = () => {
       {proposals.proposals.length ? <ul className="proposals">
         {proposals.proposals.map(p => (
           <li key={p.id}>
-            <p>{p.id} - {p.statement}</p>
+            <p>{p.id} - {p.statement} - y: {p.yea} - n: {p.nae}</p>
             <button onClick={() => {console.log("+1")}}>Yea</button>
             <button onClick={() => {console.log("-1")}}>Nae</button>
           </li>

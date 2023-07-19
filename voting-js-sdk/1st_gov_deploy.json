@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+      "api_version": "1.5.2",
+      "deploy_hash": "9b983940f79aa35d45eedcc42741af810de38d9753cc280c1c9dcc6d02417a1f"
+  }
+}

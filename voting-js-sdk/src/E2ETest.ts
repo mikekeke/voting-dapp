@@ -2,34 +2,48 @@ import { ContractWASM, CEP18Client, InstallArgs, EVENTS_MODE } from 'casper-cep1
 import { findKey, readKeys } from "./Utils";
 import { CasperClient, Contracts, RuntimeArgs } from 'casper-js-sdk';
 import { deployTokensContract } from './FungibleTokens';
-import { installGovernor, makeProposal } from './Governor';
+import { installGovernor, makeProposal, debugKeys } from './Governor';
 import { Env } from './Types';
 import { Contract } from 'casper-js-sdk/dist/lib/Contracts';
 
 
 
+
+
+
 const NODE_URL = 'http://localhost:11101/rpc';
 const NETWORK_NAME = 'casper-net-1';
+const adminKeys = readKeys("../nctl-docker/users/user-1");
+
+// const user6Keys = readKeys("../nctl-docker/users/user-6");
+
+// const NODE_URL = 'http://94.130.10.55:7777/rpc';
+// const NETWORK_NAME = 'casper-test';
+// const adminKeys = readKeys("/home/mike/casper-project/test-1-ed25519-keys");
 
 const casperClient = new CasperClient(NODE_URL);
 
-const adminKeys = readKeys("../nctl-docker/users/user-1");
-const user6Keys = readKeys("../nctl-docker/users/user-6");
-
-
 
 async function run() {
-  const cep18 = await deployTokensContract(NODE_URL, NETWORK_NAME, adminKeys);
+  // const cep18 = await deployTokensContract(NODE_URL, NETWORK_NAME, adminKeys);
 
-  console.log(`Contract hash: ${cep18.contractHash}`)
+  // console.log(`Contract hash: ${cep18.contractHash}`)
   const env = new Env(
     NODE_URL,
     NETWORK_NAME,
     adminKeys
   );
-  const res = await installGovernor(env);
+  // const res = await installGovernor(env);
+  await debugKeys(env);
 
-  const propRes = await makeProposal(env, "test proposal")
+  env.contractClient.setContractHash(
+    "hash-a37ea1228f9ebe17268fef4a29bb2ded0d6e917a76ce01eb6379e07609eead20");
+  // env.contractClient.
+  
+  const propRes = await makeProposal(env, "GG deploy")
+  // let res = await env.casperClient.getDeploy("56d163a09c27de16b891015e0a78152a13f222c526b1d647d78533937c39ef4a");
+  // console.log(res[1].execution_results[0].result)
+
 
   // var balance = await cep18.balanceOf(user6Keys.publicKey);
   // console.log(`Balance before: ${balance}`);
@@ -52,3 +66,7 @@ async function run() {
 run()
   .then(res => console.log(`Result: ${res}`))
   .catch(err => console.error(`Error: ${err}`))
+function getKeys() {
+  throw new Error('Function not implemented.');
+}
+
