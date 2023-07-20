@@ -2,11 +2,13 @@ use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::fs;
 use std::io::prelude::*;
+use odra::types::Address;
+use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeployedGovernor {
-    pub package_key: String,
-    pub package_hash: String,
+    package_key: String,
+    package_hash: String,
 }
 
 impl DeployedGovernor {
@@ -29,5 +31,9 @@ impl DeployedGovernor {
 
     pub fn get_package_hash(&self) -> &str {
         &self.package_hash
+    }
+
+    pub fn get_package_hash_address(&self) -> Address {
+        Address::from_str(self.get_package_hash()).expect("Should be able to parse address from {}")
     }
 }

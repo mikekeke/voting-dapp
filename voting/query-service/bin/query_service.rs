@@ -25,7 +25,7 @@ async fn get_proposal(
 ) -> actix_web::Result<impl Responder> {
     let proposal_id = info.into_inner();
     let result = web::block(move || {
-        let mut gov = GovernorDeployer::register(data.contract_address);
+        let mut gov = GovernorDeployer::register(data.governor.get_package_hash_address());
 
         gov.get_proposal(proposal_id)
     })
@@ -40,7 +40,7 @@ async fn get_proposal(
 #[get("/proposals")]
 async fn all_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
     let result = web::block(move || {
-        let mut gov = GovernorDeployer::register(data.contract_address);
+        let mut gov = GovernorDeployer::register(data.governor.get_package_hash_address());
 
         let num_of_proposals = gov.last_proposal_id();
         let mut proposals = ProposalsDTO::empty();
@@ -54,6 +54,11 @@ async fn all_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl R
     .map_err(|_| error::ErrorInternalServerError("Failed to query proposals from chain"))?;
 
     Ok(HttpResponse::Ok().json(result))
+}
+
+#[get("/governor-hash")]
+async fn governor_hash(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
+    Ok(HttpResponse::Ok().json(&data.governor))
 }
 
 #[get("debug/proposals")]
@@ -72,24 +77,21 @@ async fn debug_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl
 }
 
 struct ClientState {
-    contract_address: Address,
+    governor: DeployedGovernor,
 }
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let cors = Cors::permissive();
-        
-        let deployed_governor = DeployedGovernor::load_from_file("./../governor.json");
-        let contract_address =
-            Address::from_str(deployed_governor.get_package_hash()).expect(
-                "Should be able to parse address from {}"
-            );
+
+        let governor = DeployedGovernor::load_from_file("./../governor.json");
         App::new()
             .wrap(cors)
-            .app_data(web::Data::new(ClientState { contract_address }))
+            .app_data(web::Data::new(ClientState { governor }))
             .service(get_proposal)
             .service(all_proposals)
+            .service(governor_hash)
             .service(debug_proposals)
     })
     .bind(("127.0.0.1", 8080))?

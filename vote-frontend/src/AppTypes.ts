@@ -12,3 +12,8 @@ export interface IProposal {
   yea: number,
   nay: number
 }
+
+export interface IDeployedGovernor {
+  package_key: string,
+  package_hash: string,
+}

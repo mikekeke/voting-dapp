@@ -22,6 +22,8 @@ enum Vote {
   Nay
 }
 
+const VOTE_GAS = "2100000000";
+
 export const Voting: React.FC<{ pubKey: ICurrentKey, proposalId: number }> = ({ pubKey, proposalId }) => {
 
   return (
@@ -57,7 +59,7 @@ async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
     RuntimeArgs.fromMap({ proposal_id: CLValueBuilder.u64(proposalId) }),
     CLPublicKey.fromHex(keyHash),
     NETWORK_NAME,
-    "110000000000", //todo: put real price
+    VOTE_GAS,
     [userTwoKeys()]
   );
 
