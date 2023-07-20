@@ -29,10 +29,10 @@ fn main() {
     let p2 = gov_contract.get_proposal(1);
     println!("Prop2: {:#?}", p2);
 
-    client_env::set_gas(110_000_000_000u64);
-    gov_contract.vote_for(1);
-    let p2 = gov_contract.get_proposal(1);
-    println!("Voted Prop2: {:#?}", p2);
+    // client_env::set_gas(110_000_000_000u64);
+    // gov_contract.vote_for(1);
+    // let p2 = gov_contract.get_proposal(1);
+    // println!("Voted Prop2: {:#?}", p2);
 
     DeployedGovernor::new(gov_contract.address().to_string())
         .save_to_file("./../governor.json")

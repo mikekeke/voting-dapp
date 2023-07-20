@@ -17,34 +17,43 @@ import { ICurrentKey } from "./AppTypes";
 import { userTwoKeys } from "./Utils";
 import { casperClient, contractClient, NETWORK_NAME } from './CasperNetwork'
 
-export const Vote: React.FC<{ pubKey: ICurrentKey, }> = ({ pubKey }) => {
-  // const [proposals, setProposals] = useState<IProposals>({ proposals: [] });
-  const proposalId = 0; //todo: move to args
+enum Vote {
+  Yea,
+  Nay
+}
 
+export const Voting: React.FC<{ pubKey: ICurrentKey, proposalId: number }> = ({ pubKey, proposalId }) => {
 
   return (
-    <button onClick={() => { buildVoteDeploy(pubKey, proposalId).catch(err => alert(err)) }}>Vote for</button>
+    <div>
+      <button onClick={() => {
+        vote(pubKey, proposalId, Vote.Yea).catch(err => alert(err))
+      }}>Yea</button>
+      <button onClick={() => {
+        vote(pubKey, proposalId, Vote.Nay).catch(err => alert(err))
+      }}>Nay</button>
+    </div>
   );
 };
 
-
+// todo: important
 // const CasperWalletProvider = window.CasperWalletProvider;
 // const provider = CasperWalletProvider();
 
 
-async function buildVoteDeploy(iPubKey: ICurrentKey, proposalId: number) {
+async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
 
   // todo: important
-  // if (!iPubKey.pubKey) {
-  //   throw new Error("Key is missing. Is wallet connected?")
-  // };
+  if (!iPubKey.pubKey) {
+    throw new Error("Key is missing. Is wallet connected?")
+  };
 
-  // const keyHash = iPubKey.pubKey!;
-  const keyHash = userTwoKeys().publicKey.toHex();
-  console.log(`Real PKH ${keyHash}`);
+  const keyHash = iPubKey.pubKey!;
+
+  const endpoint = vote === Vote.Yea ? "vote_for" : "vote_against";
 
   const deploy = contractClient.callEntrypoint(
-    "vote_for",
+    endpoint,
     RuntimeArgs.fromMap({ proposal_id: CLValueBuilder.u64(proposalId) }),
     CLPublicKey.fromHex(keyHash),
     NETWORK_NAME,

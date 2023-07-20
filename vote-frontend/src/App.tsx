@@ -5,7 +5,7 @@ import './App.css';
 import { Proposals } from './Proposals';
 import { ICurrentKey } from './AppTypes'
 import { Wallet } from './Wallet';
-import { Vote } from './Vote';
+import { Voting } from './Voting';
 import { casperClient, contractClient } from './CasperNetwork'
 // import Wallet from './Wallet';
 import {
@@ -34,7 +34,7 @@ declare global {
 // const GOVERNOR_PACKAGE_HASH_KEY = "governor_package_hash";
 
 // todo: how to pass it from outside? From input field?
-const PACKAGE_HASH = "hash-529374f3bbc36e7e8d7b13cb014e6dab224f5227d37d2dcd0a73ac9901ed73b3";
+const PACKAGE_HASH = "hash-19cbef0e3af5edf681e4f016c9e2703fc63a1cf6abdd3bfc58aa891b32784524";
 
 function App() {
   const [pubKey, setPubKey] = useState<ICurrentKey>({ pubKey: undefined });
@@ -57,8 +57,7 @@ function App() {
         pubKey={pubKey}
         setKey={setKey}
       />
-      <Vote pubKey={pubKey} />
-      <Proposals />
+      <Proposals pubKey={pubKey}/>
     </div>
   );
 }

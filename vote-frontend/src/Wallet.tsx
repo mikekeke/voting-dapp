@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { ICurrentKey } from './AppTypes'
+import { userTwoKeys } from './Utils';
 
 
 // const CasperWalletProvider = window.CasperWalletProvider;
@@ -22,5 +23,9 @@ export const Wallet: React.FC<{
     // }
     // const keyHash: string = await provider.getActivePublicKey();
     // setKey(keyHash)
+
+    // todo: fake keys; should get it from wallet extension
+    const keyHash = userTwoKeys().publicKey.toHex();
+    setKey(keyHash)
   }
 };
