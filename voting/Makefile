@@ -4,7 +4,7 @@ build-casper:
 deploy-via-livenet:
 	cd contracts \
 	&& cargo odra build -b casper \
-	&& cargo run --bin deploy --features casper-livenet --no-default-features
+	&& cargo run --bin deploy --features "casper-livenet" --no-default-features
 
 livenet-e2e:
 	cd contracts \

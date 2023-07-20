@@ -25,10 +25,10 @@ export async function installGovernor(env: Env) {
   const installDeploy = env.contractClient.install(
     WASM,
     RuntimeArgs.fromMap({
-      odra_cfg_package_hash_key_name: CLValueBuilder.string("gov_contract_key"),
+      odra_cfg_package_hash_key_name: CLValueBuilder.string("governor_package_hash"),
       odra_cfg_allow_key_override: CLValueBuilder.bool(true),
       odra_cfg_is_upgradable: CLValueBuilder.bool(true),
-      odra_cfg_constructor : CLValueBuilder.string("init"),
+      odra_cfg_constructor: CLValueBuilder.string("init"),
       name: CLValueBuilder.string("test-lol")
     }),
     DEPLOY_GAS_PRICE.toString(),
@@ -45,18 +45,18 @@ export async function installGovernor(env: Env) {
   console.log(encodeBase16(installDeploy.hash));
   const result = await env.casperClient.nodeClient.waitForDeploy(installDeploy);
 
-  console.log(`Gov res`); 
+  console.log(`Gov res`);
   console.log(result.execution_results[0].result);
   // !!! Stopped working for some reason - END
 
   await setContractHash(env);
 }
 
-export async function makeProposal(env: Env, proposal: string) { 
-  
+export async function makeProposal(env: Env, proposal: string) {
+
   const depl = env.contractClient.callEntrypoint(
     "new_proposal",
-    RuntimeArgs.fromMap({statement: CLValueBuilder.string(proposal)}),
+    RuntimeArgs.fromMap({ statement: CLValueBuilder.string(proposal) }),
     env.adminKeys.publicKey,
     env.network,
     "330560983230",
@@ -67,8 +67,8 @@ export async function makeProposal(env: Env, proposal: string) {
   console.log(`Prop deploy hash: ${deplHash}`);
   const result = await env.casperClient.nodeClient.waitForDeploy(depl);
 
-  console.log(`Prop res`); 
-  console.log(result.execution_results[0].result); 
+  console.log(`Prop res`);
+  console.log(result.execution_results[0].result);
   return deplHash
 }
 
@@ -77,6 +77,8 @@ async function setContractHash(env: Env) {
   const accountHash = env.adminKeys.publicKey.toAccountHashStr();
   const state = await env.casperClient.nodeClient
     .getBlockState(rootHash, accountHash, []);
+
+
 
   const packageHash =
     state
@@ -96,23 +98,29 @@ async function setContractHash(env: Env) {
 }
 
 export async function debugKeys(env: Env) {
+  console.log("Getting keys")
   const rootHash = await env.casperClient.nodeClient.getStateRootHash();
+  console.log(`Root hash: ${rootHash}`);
   const accountHash = env.adminKeys.publicKey.toAccountHashStr();
   const state = await env.casperClient.nodeClient
     .getBlockState(rootHash, accountHash, []);
 
+  console.log(`State: ${JSON.stringify(state)}`);
   const packageHash =
     state
       .Account
       ?.namedKeys
-      .find(mKey => mKey.name === "gov_contract_key")
+      .find(mKey => mKey.name === "governor_package_hash")
       ?.key
 
+  console.log(`Package hash: ${packageHash}`);
 
+  console.log(4)
   const contractHash = await env.casperClient.nodeClient
     .getBlockState(rootHash, packageHash!, [])
     .then(p => p.ContractPackage?.versions[0].contractHash);
 
+  console.log(5)
   console.log(`Gov package hash: ${packageHash}`)
   console.log(`Gov contract hash: ${contractHash}`)
 }

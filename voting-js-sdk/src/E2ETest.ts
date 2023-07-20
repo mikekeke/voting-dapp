@@ -35,10 +35,10 @@ async function run() {
   );
   // const res = await installGovernor(env);
   await debugKeys(env);
-
+  
   env.contractClient.setContractHash(
-    "hash-a37ea1228f9ebe17268fef4a29bb2ded0d6e917a76ce01eb6379e07609eead20");
-  // env.contractClient.
+    "hash-bbab6ce649fcdad8893454505c029221663795fa4ba32f67a3bf03fe32f1962e");
+  // // env.contractClient.
   
   const propRes = await makeProposal(env, "GG deploy")
   // let res = await env.casperClient.getDeploy("56d163a09c27de16b891015e0a78152a13f222c526b1d647d78533937c39ef4a");

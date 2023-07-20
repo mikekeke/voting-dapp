@@ -6,9 +6,10 @@ use odra::types::Address;
 use std::str::FromStr;
 // use hex::decode;
 
-use contracts::governor::GovernorDeployer;
+
+use contracts::{deployed_governor::DeployedGovernor, governor::GovernorDeployer};
 // const DEPLOY_COST: u64 = 82518089110;
-const DEPLOY_COST: u64 = 110_000_000_000u64;
+const DEPLOY_COST: u64 = 96_000_000_000;
 
 fn main() {
     client_env::set_gas(DEPLOY_COST);
@@ -32,4 +33,7 @@ fn main() {
     gov_contract.vote_for(1);
     let p2 = gov_contract.get_proposal(1);
     println!("Voted Prop2: {:#?}", p2);
+
+    DeployedGovernor::new(gov_contract.address().to_string())
+        .save_to_file("./../governor.json")
 }

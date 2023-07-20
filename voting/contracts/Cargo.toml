@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 odra = { version = "0.4.0", features = [], default-features = false }
-# odra = { path = "../../../odra/core", default-features = false }
-# odra-modules = { path = "../../../odra/modules", default-features = false }
+serde_json = { version = "1.0.103"}
+serde = { version = "1.0.171", features = ["derive"] }
 
 [features]
 default = ["mock-vm"]

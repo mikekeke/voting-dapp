@@ -674,6 +674,8 @@ name = "contracts"
 version = "0.1.0"
 dependencies = [
  "odra",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
