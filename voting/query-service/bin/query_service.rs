@@ -82,7 +82,7 @@ async fn main() -> std::io::Result<()> {
         
         let deployed_governor = DeployedGovernor::load_from_file("./../governor.json");
         let contract_address =
-            Address::from_str(deployed_governor.package_hash.as_str()).expect(
+            Address::from_str(deployed_governor.get_package_hash()).expect(
                 "Should be able to parse address from {}"
             );
         App::new()

@@ -10,5 +10,5 @@ export interface IProposal {
   id: number,
   statement: string,
   yea: number,
-  nae: number
+  nay: number
 }

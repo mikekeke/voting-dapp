@@ -26,4 +26,8 @@ impl DeployedGovernor {
         let governor_json = fs::read_to_string(path).expect("Should read governor data from file");
         serde_json::from_str(&governor_json).expect("Should parse JSON with contract data")
     }
+
+    pub fn get_package_hash(&self) -> &str {
+        &self.package_hash
+    }
 }

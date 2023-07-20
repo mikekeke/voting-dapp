@@ -15,6 +15,7 @@ import {
 } from "casper-js-sdk";
 import { ICurrentKey } from "./AppTypes";
 import { userTwoKeys } from "./Utils";
+import { casperClient, contractClient, NETWORK_NAME } from './CasperNetwork'
 
 export const Vote: React.FC<{ pubKey: ICurrentKey, }> = ({ pubKey }) => {
   // const [proposals, setProposals] = useState<IProposals>({ proposals: [] });
@@ -30,16 +31,8 @@ export const Vote: React.FC<{ pubKey: ICurrentKey, }> = ({ pubKey }) => {
 // const CasperWalletProvider = window.CasperWalletProvider;
 // const provider = CasperWalletProvider();
 
-// todo: move everything to config or args
-const NODE_URL = 'http://localhost:11101/rpc';
-const NETWORK_NAME = 'casper-net-1';
-const CONTRACT_HASH = "hash-a37ea1228f9ebe17268fef4a29bb2ded0d6e917a76ce01eb6379e07609eead20";
-
-const casperClient = new CasperClient(NODE_URL);  // todo: move to config
-const contract = new Contracts.Contract(casperClient);
 
 async function buildVoteDeploy(iPubKey: ICurrentKey, proposalId: number) {
-  contract.setContractHash(CONTRACT_HASH);
 
   // todo: important
   // if (!iPubKey.pubKey) {
@@ -50,7 +43,7 @@ async function buildVoteDeploy(iPubKey: ICurrentKey, proposalId: number) {
   const keyHash = userTwoKeys().publicKey.toHex();
   console.log(`Real PKH ${keyHash}`);
 
-  const deploy = contract.callEntrypoint(
+  const deploy = contractClient.callEntrypoint(
     "vote_for",
     RuntimeArgs.fromMap({ proposal_id: CLValueBuilder.u64(proposalId) }),
     CLPublicKey.fromHex(keyHash),

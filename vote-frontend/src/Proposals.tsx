@@ -23,7 +23,7 @@ export const Proposals: React.FC<{}> = () => {
       {proposals.proposals.length ? <ul className="proposals">
         {proposals.proposals.map(p => (
           <li key={p.id}>
-            <p>{p.id} - {p.statement} - y: {p.yea} - n: {p.nae}</p>
+            <p>{p.id} - {p.statement} - y: {p.yea} - n: {p.nay}</p>
             <button onClick={() => {console.log("+1")}}>Yea</button>
             <button onClick={() => {console.log("-1")}}>Nae</button>
           </li>
