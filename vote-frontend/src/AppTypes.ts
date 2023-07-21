@@ -17,3 +17,8 @@ export interface IDeployedGovernor {
   package_key: string,
   package_hash: string,
 }
+
+export interface IContractInfo {
+  package_hash: string,
+  contract_hash: string
+}

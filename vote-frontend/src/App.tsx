@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Proposals } from './Proposals';
-import { ICurrentKey } from './AppTypes'
+import { IContractInfo, ICurrentKey } from './AppTypes'
 import { Wallet } from './Wallet';
 import { casperClient, contractClient, queryDeployedGovernor } from './CasperNetwork'
 
@@ -14,11 +14,11 @@ declare global {
 
 function App() {
   const [pubKey, setPubKey] = useState<ICurrentKey>({ pubKey: undefined });
-  const [contractHash, setContractHash] = useState<string | undefined>(undefined);
+  const [contractInfo, setContractInfo] = useState<IContractInfo | undefined>(undefined);
 
   useEffect(() => {
     intiContractClient()
-      .then(setContractHash)
+      .then(setContractInfo)
   });
 
   const setKey = (keyHash: string) => {
@@ -27,8 +27,9 @@ function App() {
 
   return (
     <div className="App">
-      <p>Current key: {pubKey.pubKey}</p>
-      <p>Contract hash: {contractHash}</p>
+      <p>Current pub key: {pubKey.pubKey}</p>
+      <p>Contract package hash: {contractInfo?.package_hash}</p>
+      <p>Contract hash: {contractInfo?.contract_hash}</p>
       <Wallet
         pubKey={pubKey}
         setKey={setKey}
@@ -41,7 +42,7 @@ function App() {
 export default App;
 
 // Finds contract hash using package hash received from Odra livenet deployer.
-async function intiContractClient(): Promise<string> {
+async function intiContractClient(): Promise<IContractInfo> {
 
   const deployedGovernor = await queryDeployedGovernor();
   const packageHash = deployedGovernor.package_hash;
@@ -50,11 +51,11 @@ async function intiContractClient(): Promise<string> {
     .getBlockState(rootHash, packageHash, [])
     .then(p => p.ContractPackage?.versions[0].contractHash);
 
-  console.log(`Contract hash: ${contractHash}`)
   if (!contractHash) {
     throw new Error(`Failed to find contract hash for package hash ${packageHash}`)
   }
   contractHash = contractHash!.replace("contract-", "hash-");
   contractClient.setContractHash(contractHash);
-  return contractHash
+  return {package_hash: packageHash,
+    contract_hash: contractHash}
 }

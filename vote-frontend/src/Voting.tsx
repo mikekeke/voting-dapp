@@ -44,10 +44,11 @@ export const Voting: React.FC<{ pubKey: ICurrentKey, proposalId: number }> = ({ 
 
 
 async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
+  console.log(`Voting for proposal ${proposalId}`);
 
   // todo: important
   if (!iPubKey.pubKey) {
-    throw new Error("Key is missing. Is wallet connected?")
+    throw new Error("Public key is missing. Is wallet connected?")
   };
 
   const keyHash = iPubKey.pubKey!;
@@ -65,11 +66,26 @@ async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
 
   const signedDeploy = await signDeploy(deploy, keyHash);
 
-  const deployHash = await casperClient.putDeploy(signedDeploy);
-  console.log(`Vote for deploy hash: ${deployHash}`);
+  console.log(`Sending deploy to vote for proposal ${proposalId}...`)
+  const _deployHash = await casperClient.putDeploy(signedDeploy);
   const result = await casperClient.nodeClient.waitForDeploy(signedDeploy);
-  console.log('----- VOTE FOR RESULT -----');
-  console.log(result);
+  const failure = result.execution_results[0].result.Failure;
+  const success = result.execution_results[0].result.Failure;
+
+  if (failure) {
+    let msg = failure!.error_message === "User error: 0" ? 'you voted already' : failure!.error_message;
+    msg = `Failed to vote: ${msg}`;
+    alert(msg);
+    console.error(msg);
+  } else {
+    alert(`Voted successfully for ${proposalId}!`);
+    console.log(`Voted successfully for ${{
+      proposalId: proposalId,
+      keyHash: keyHash,
+      result: success
+    }
+      }`)
+  }
 }
 
 async function signDeploy(deploy: DeployUtil.Deploy, keyHash: string): Promise<DeployUtil.Deploy> {

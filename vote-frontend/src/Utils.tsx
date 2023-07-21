@@ -10,7 +10,6 @@ import {
 export function userTwoKeys(): Keys.AsymmetricKey {
   const privateKey = Keys.Ed25519.parsePrivateKey(
     decodeBase64("MC4CAQAwBQYDK2VwBCIEIJ3WEDyVs7vJpLbBtrsqSeOBAZaX9q0lCiGKYtGzqXgF"));
-  console.log("parsing keys")
   return Keys.Ed25519.parseKeyPair(
     Keys.Ed25519.privateToPublicKey(privateKey),
     privateKey
