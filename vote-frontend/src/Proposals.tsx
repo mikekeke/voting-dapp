@@ -13,6 +13,7 @@ export const Proposals: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
 
   return (
     <div className="section__proposals">
+      <p>Proposals:</p>
       {proposals.proposals.length ? <ul className="proposals">
         {proposals.proposals.map(p => (
           <li key={p.id}>
