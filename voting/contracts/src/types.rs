@@ -9,11 +9,18 @@ pub enum Vote {
 }
 
 #[derive(OdraType, Debug, PartialEq, Eq)]
+pub enum Status {
+    Active,
+    Finished,
+}
+
+#[derive(OdraType, Debug, PartialEq, Eq)]
 pub struct Proposal {
     pub id: ProposalId,
     pub statement: String,
     pub yea: u32,
     pub nay: u32,
+    pub status: Status,
 }
 
 impl Proposal {
@@ -23,6 +30,7 @@ impl Proposal {
             statement,
             yea: 0,
             nay: 0,
+            status: Status::Active
         }
     }
 }

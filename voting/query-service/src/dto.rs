@@ -1,7 +1,13 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 
-use contracts::types::Proposal;
+use contracts::types as contract;
+
+#[derive(Serialize, Deserialize)]
+pub enum Status {
+    Active,
+    Finished,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ProposalDTO {
@@ -9,15 +15,21 @@ pub struct ProposalDTO {
     pub statement: String,
     pub yea: u32,
     pub nay: u32,
+    pub status: Status
 }
 
-impl From<Proposal> for ProposalDTO {
-    fn from(p: Proposal) -> Self {
+impl From<contract::Proposal> for ProposalDTO {
+    fn from(p: contract::Proposal) -> Self {
         ProposalDTO {
             id: p.id,
             statement: p.statement,
             yea: p.yea,
             nay: p.nay,
+            // todo: is there a better automatic way to do this w/o adding serde derivations to contract::Status?
+            status: match p.status {
+                contract::Status::Active => Status::Active,
+                contract::Status::Finished => Status::Finished,
+            }
         }
     }
 }

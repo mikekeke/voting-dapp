@@ -67,6 +67,17 @@
         }
       ],
       "return_ty": "Unit"
+    },
+    {
+      "name": "finalize_voting",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "proposal_id",
+          "ty": "U64"
+        }
+      ],
+      "return_ty": "Unit"
     }
   ],
   "events": []

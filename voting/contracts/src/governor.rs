@@ -17,7 +17,8 @@ pub struct Governor {
 execution_error! {
   pub enum Error {
       AddressAlreadyVoted => 0,
-      ProposalDoesNotExist => 1
+      ProposalDoesNotExist => 1,
+      VotingFinished => 2,
   }
 }
 
@@ -29,6 +30,7 @@ impl Governor {
         self.name.set(name);
     }
 
+    // All pub functions Odra converts to Contract entry points
     pub fn get_name(&self) -> String {
         self.name.get().unwrap_or_revert()
     }
@@ -58,6 +60,16 @@ impl Governor {
         self.vote(proposal_id, Vote::Nay)
     }
 
+    pub fn finalize_voting(&mut self, proposal_id: ProposalId) {
+        let mut proposal = self.get_proposal(proposal_id);
+        if let Status::Finished = proposal.status {
+            odra::contract_env::revert(Error::VotingFinished);
+        }
+        proposal.status = Status::Finished;
+        self.proposals.set(&proposal_id, proposal)
+    }
+
+
     fn vote(&mut self, proposal_id: ProposalId, vote: Vote) {
         let caller = odra::contract_env::caller();
         let registry_key = (proposal_id, caller);
@@ -66,8 +78,11 @@ impl Governor {
             Some(_) => odra::contract_env::revert(Error::AddressAlreadyVoted),
             None => self.voters_registry.set(&registry_key, vote.clone()),
         }
-
+        
         let proposal = self.get_proposal(proposal_id);
+        if let Status::Finished = proposal.status {
+            odra::contract_env::revert(Error::VotingFinished);
+        } 
 
         let proposal = match vote {
             Vote::Yea => Proposal {
@@ -95,7 +110,7 @@ impl Governor {
 mod tests {
     use odra::{test_env, types::Address};
 
-    use crate::{governor::Error, GovernorRef};
+    use crate::{governor::Error, GovernorRef, types::Status};
 
     use super::{GovernorDeployer, Proposal};
 
@@ -131,6 +146,7 @@ mod tests {
             statement: statement,
             yea: 0,
             nay: 0,
+            status: Status::Active
         };
 
         assert_eq!(expected, contract.get_proposal(0));
@@ -159,6 +175,7 @@ mod tests {
             statement: String::from("Some proposal"),
             yea: 1,
             nay: 1,
+            status: Status::Active
         };
         assert_eq!(expected, contract.get_proposal(0));
 

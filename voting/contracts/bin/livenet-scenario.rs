@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 use contracts::{deployed_governor::DeployedGovernor, governor::GovernorDeployer};
 // const DEPLOY_COST: u64 = 82518089110;
-const DEPLOY_COST: u64 = 96_000_000_000;
+const DEPLOY_COST: u64 = 97_000_000_000;
 
 fn main() {
     client_env::set_gas(DEPLOY_COST);

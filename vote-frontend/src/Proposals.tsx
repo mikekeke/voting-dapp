@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ICurrentKey, IProposals } from './AppTypes'
+import { ICurrentKey, IProposals, Status } from './AppTypes'
 import { Voting } from "./Voting";
 import { queryProposals } from "./CasperNetwork";
+import { FinalizeVoting } from "./FinalizeVoting";
 
 
 export const Proposals: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
@@ -18,10 +19,13 @@ export const Proposals: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
         {proposals.proposals.map(p => (
           <li key={p.id}>
             <p>{p.id} - {p.statement} - y: {p.yea} - n: {p.nay}</p>
-            <Voting
-              pubKey={pubKey}
-              proposalId={p.id}
-            />
+            {(p.status === Status.Active) ?
+              <div>
+                <Voting pubKey={pubKey} proposalId={p.id} />
+                <FinalizeVoting pubKey={pubKey} proposalId={p.id} />
+              </div>
+              : <p>Voting finished</p>
+            }
           </li>
         ))}
 

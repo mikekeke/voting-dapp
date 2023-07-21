@@ -16,7 +16,7 @@ use contracts::{
 use log::{info, trace, warn};
 use serde_json;
 
-use query_service::dto::{ProposalDTO, ProposalsDTO};
+use query_service::dto::{ProposalDTO, ProposalsDTO, Status};
 
 #[get("/proposal/{proposal_id}")]
 async fn get_proposal(
@@ -62,7 +62,7 @@ async fn governor_hash(data: web::Data<ClientState>) -> actix_web::Result<impl R
 }
 
 #[get("debug/proposals")]
-async fn debug_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
+async fn debug_proposals(_data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
     let mut proposals = ProposalsDTO::empty();
     for n in 0..=4 {
         proposals.add(ProposalDTO {
@@ -70,6 +70,7 @@ async fn debug_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl
             statement: format!("Proposal #{}", n),
             yea: n.try_into().unwrap(),
             nay: 0,
+            status: Status::Active
         });
     }
 

@@ -5,16 +5,13 @@ import { userTwoKeys } from "./Utils";
 
 export const PROPOSAL_GAS = "2800000000";
 export const VOTE_GAS = "2100000000";
+export const FINALIZE_GAS = "1300000000";
 
 export const NODE_URL = 'http://localhost:11101/rpc';
 export const NETWORK_NAME = 'casper-net-1';
 
 export const casperClient = new casperJsSdk.CasperClient(NODE_URL);
 export const contractClient = new casperJsSdk.Contracts.Contract(casperClient);
-
-export const OWNER_KEY = casperJsSdk.Keys.Ed25519.parsePublicKey(
-  casperJsSdk.decodeBase64("0184f6d260F4EE6869DDB36affe15456dE6aE045278FA2f467bb677561cE0daD55")
-);
 
 export const QUERY_SERVICE_URL = "http://localhost:8080"
 

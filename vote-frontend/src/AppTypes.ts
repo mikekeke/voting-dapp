@@ -5,12 +5,16 @@ export type ICurrentKey = {
 export interface IProposals {
   proposals: IProposal[]
 }
-
+export enum Status {
+  Active = "Active",
+  Finished = "Finished"
+}
 export interface IProposal {
   id: number,
   statement: string,
   yea: number,
-  nay: number
+  nay: number,
+  status: Status
 }
 
 export interface IDeployedGovernor {
