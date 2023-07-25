@@ -18,7 +18,7 @@ export const Proposals: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
       {proposals.proposals.length ? <ul className="proposals">
         {proposals.proposals.map(p => (
           <li key={p.id}>
-            <p>{p.id} - {p.statement} - y: {p.yea} - n: {p.nay}</p>
+            <p>ID: {p.id} | {p.statement} | yea: {p.yea} | nay: {p.nay}</p>
             {(p.status === Status.Active) ?
               <div>
                 <Voting pubKey={pubKey} proposalId={p.id} />
@@ -28,7 +28,6 @@ export const Proposals: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
             }
           </li>
         ))}
-
       </ul> : <div>No proposals found yet</div>}
     </div>
   );

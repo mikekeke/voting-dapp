@@ -19,15 +19,25 @@
       "return_ty": "String"
     },
     {
-      "name": "new_proposal",
-      "is_mutable": true,
+      "name": "get_call_data",
+      "is_mutable": false,
       "args": [
         {
-          "name": "statement",
-          "ty": "String"
+          "name": "proposal_id",
+          "ty": "U64"
         }
       ],
-      "return_ty": "Unit"
+      "return_ty": {
+        "Tuple2": [
+          "String",
+          {
+            "Tuple2": [
+              "String",
+              "String"
+            ]
+          }
+        ]
+      }
     },
     {
       "name": "get_proposal",
@@ -39,6 +49,31 @@
         }
       ],
       "return_ty": "Any"
+    },
+    {
+      "name": "new_proposal",
+      "is_mutable": true,
+      "args": [
+        {
+          "name": "statement",
+          "ty": "String"
+        },
+        {
+          "name": "call_data",
+          "ty": {
+            "Tuple2": [
+              "String",
+              {
+                "Tuple2": [
+                  "String",
+                  "String"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "return_ty": "Unit"
     },
     {
       "name": "last_proposal_id",

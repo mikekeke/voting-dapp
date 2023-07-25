@@ -1,7 +1,5 @@
-use serde::{Deserialize, Serialize};
-use serde_json::Result;
-
 use contracts::types as contract;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub enum Status {
@@ -15,7 +13,7 @@ pub struct ProposalDTO {
     pub statement: String,
     pub yea: u32,
     pub nay: u32,
-    pub status: Status
+    pub status: Status,
 }
 
 impl From<contract::Proposal> for ProposalDTO {
@@ -29,20 +27,21 @@ impl From<contract::Proposal> for ProposalDTO {
             status: match p.status {
                 contract::Status::Active => Status::Active,
                 contract::Status::Finished => Status::Finished,
-            }
+            },
         }
     }
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ProposalsDTO {
-    proposals: Vec<ProposalDTO>
+    proposals: Vec<ProposalDTO>,
 }
 
 impl ProposalsDTO {
-
     pub fn empty() -> Self {
-        ProposalsDTO { proposals: Vec::new() }
+        ProposalsDTO {
+            proposals: Vec::new(),
+        }
     }
     pub fn add(&mut self, proposal: ProposalDTO) {
         self.proposals.push(proposal)

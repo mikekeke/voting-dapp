@@ -1,29 +1,16 @@
-// #[cfg(not(feature = "casper-livenet"))]
-// compile_error!("This crate can only be used for CasperLabs Livenet");
-
-use odra::client_env;
-use odra::types::Address;
-use std::fs;
-use std::str::FromStr;
-
 use actix_cors::Cors;
-use actix_web::{error, get, post, web, App, HttpResponse, HttpServer, Responder};
-use contracts::{
-    deployed_governor::{self, DeployedGovernor},
-    governor::{GovernorDeployer, GovernorRef},
-    types::ProposalId,
-};
-use log::{info, trace, warn};
-use serde_json;
+use actix_web::{error, get, web, App, HttpResponse, HttpServer, Responder};
+use contracts::{deployed_contracts::DeployedGovernor, governor::GovernorDeployer};
+// use log::{info, trace, warn};
 
 use query_service::dto::{ProposalDTO, ProposalsDTO, Status};
 
 #[get("/proposal/{proposal_id}")]
 async fn get_proposal(
-    info: web::Path<u64>,
+    pid: web::Path<u64>,
     data: web::Data<ClientState>,
 ) -> actix_web::Result<impl Responder> {
-    let proposal_id = info.into_inner();
+    let proposal_id = pid.into_inner();
     let result = web::block(move || {
         let mut gov = GovernorDeployer::register(data.governor.get_package_hash_address());
 
@@ -56,8 +43,25 @@ async fn all_proposals(data: web::Data<ClientState>) -> actix_web::Result<impl R
     Ok(HttpResponse::Ok().json(result))
 }
 
-#[get("/governor-hash")]
-async fn governor_hash(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
+#[get("/call-data/{proposal_id}")]
+async fn call_data(
+    pid: web::Path<u64>,
+    data: web::Data<ClientState>,
+) -> actix_web::Result<impl Responder> {
+    let proposal_id = pid.into_inner();
+    let result = web::block(move || {
+        let gov = GovernorDeployer::register(data.governor.get_package_hash_address());
+
+        gov.get_call_data(proposal_id)
+    })
+    .await
+    .map_err(|_| error::ErrorInternalServerError("Failed to query call_data from chain"))?;
+
+    Ok(HttpResponse::Ok().json(result))
+}
+
+#[get("/governor")]
+async fn get_governor(data: web::Data<ClientState>) -> actix_web::Result<impl Responder> {
     Ok(HttpResponse::Ok().json(&data.governor))
 }
 
@@ -70,7 +74,7 @@ async fn debug_proposals(_data: web::Data<ClientState>) -> actix_web::Result<imp
             statement: format!("Proposal #{}", n),
             yea: n.try_into().unwrap(),
             nay: 0,
-            status: Status::Active
+            status: Status::Active,
         });
     }
 
@@ -92,8 +96,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(ClientState { governor }))
             .service(get_proposal)
             .service(all_proposals)
-            .service(governor_hash)
+            .service(get_governor)
             .service(debug_proposals)
+            .service(call_data)
+        // .service(get_number)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

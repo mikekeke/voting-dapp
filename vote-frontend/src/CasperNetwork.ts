@@ -3,9 +3,10 @@ import { IDeployedGovernor, IProposals } from "./AppTypes";
 import axios from "axios";
 import { userTwoKeys } from "./Utils";
 
-export const PROPOSAL_GAS = "2800000000";
-export const VOTE_GAS = "2100000000";
-export const FINALIZE_GAS = "1300000000";
+// export const PROPOSAL_GAS = "2800000000";
+export const PROPOSAL_GAS = "5000000000";
+export const VOTE_GAS = "2500000000";
+export const FINALIZE_GAS = "3000000000";
 
 export const NODE_URL = 'http://localhost:11101/rpc';
 export const NETWORK_NAME = 'casper-net-1';
@@ -16,13 +17,19 @@ export const contractClient = new casperJsSdk.Contracts.Contract(casperClient);
 export const QUERY_SERVICE_URL = "http://localhost:8080"
 
 export async function queryDeployedGovernor(): Promise<IDeployedGovernor> {
-  let resp = await axios.get<IDeployedGovernor>("http://localhost:8080/governor-hash")
+  let resp = await axios.get<IDeployedGovernor>("http://localhost:8080/governor")
   return resp.data
 }
 
 export async function queryProposals(): Promise<IProposals> {
-  const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
-  return resp.data
+  try {
+
+    const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
+    return resp.data
+  } catch (e) {
+    console.error(e)
+    return {proposals: []}
+  }
 }
 
 export async function signAndSubmitDeploy(deploy: casperJsSdk.DeployUtil.Deploy, keyHash: string) {
@@ -30,7 +37,8 @@ export async function signAndSubmitDeploy(deploy: casperJsSdk.DeployUtil.Deploy,
   const signedDeploy = await signDeploy(deploy, keyHash);
 
   console.log(`Sending deploy to the network "${NETWORK_NAME}"...`)
-  const _deployHash = await casperClient.putDeploy(signedDeploy);
+  const deployHash = await casperClient.putDeploy(signedDeploy);
+  console.log(`Deploy hash: ${deployHash}`);
   const result = await casperClient.nodeClient.waitForDeploy(signedDeploy);
   const failure = result.execution_results[0].result.Failure;
   const success = result.execution_results[0].result.Success;

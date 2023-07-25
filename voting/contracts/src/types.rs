@@ -33,4 +33,8 @@ impl Proposal {
             status: Status::Active
         }
     }
+
+    pub fn voted_yes(&self) -> bool {
+        self.yea > self.nay
+    }
 }

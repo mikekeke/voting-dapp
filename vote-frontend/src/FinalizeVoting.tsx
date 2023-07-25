@@ -25,10 +25,6 @@ export const FinalizeVoting: React.FC<{
   );
 };
 
-// todo: important
-// const CasperWalletProvider = window.CasperWalletProvider;
-// const provider = CasperWalletProvider();
-
 async function finalize(iPubKey: ICurrentKey, proposalId: number) {
   console.log(`Finalizing voting for proposal ${proposalId}`);
 
@@ -49,7 +45,7 @@ async function finalize(iPubKey: ICurrentKey, proposalId: number) {
 
   const [success, failure] = await signAndSubmitDeploy(deploy, keyHash);
   if (failure) {
-    const msg = `Failed to finalize voteing: ${failure!.error_message}`;
+    const msg = `Failed to finalize voting: ${failure!.error_message}`;
     alert(msg);
     console.error(msg);
   } else {

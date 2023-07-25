@@ -1,34 +1,28 @@
 {
-  "name": "Flipper",
+  "name": "TestNumber",
   "entrypoints": [
     {
-      "name": "initial_settings",
+      "name": "init",
       "is_mutable": true,
       "args": [],
       "return_ty": "Unit"
     },
     {
-      "name": "set",
+      "name": "set_number",
       "is_mutable": true,
       "args": [
         {
-          "name": "value",
-          "ty": "Bool"
+          "name": "n",
+          "ty": "U32"
         }
       ],
       "return_ty": "Unit"
     },
     {
-      "name": "flip",
+      "name": "get_number",
       "is_mutable": true,
       "args": [],
-      "return_ty": "Unit"
-    },
-    {
-      "name": "get",
-      "is_mutable": false,
-      "args": [],
-      "return_ty": "Bool"
+      "return_ty": "U32"
     }
   ],
   "events": []

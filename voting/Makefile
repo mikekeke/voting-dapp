@@ -9,7 +9,7 @@ deploy-via-livenet:
 livenet-e2e:
 	cd contracts \
 	&& cargo odra build -b casper \
-	&& cargo run --bin livenet-scenario --features casper-livenet --no-default-features
+	&& cargo run --bin livenet-debug --features casper-livenet --no-default-features
 
 dbg-query:
 	cargo run --bin query --features casper-livenet --no-default-features
@@ -25,3 +25,7 @@ run-query-service:
 
 build-query-service:
 	cd query-service && cargo build
+
+clean:
+	cargo clean && cd contracts && cargo odra clean
+

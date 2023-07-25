@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { Proposals } from './Proposals';
 import { IContractInfo, ICurrentKey } from './AppTypes'

@@ -1,8 +1,6 @@
-use serde::{Deserialize, Serialize};
-use serde_json::Result;
-use std::fs;
-use std::io::prelude::*;
 use odra::types::Address;
+use serde::{Deserialize, Serialize};
+use std::fs;
 use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Debug)]
