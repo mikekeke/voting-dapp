@@ -27,9 +27,9 @@ function App() {
 
   return (
     <div className="App">
+      <p>Governor package hash: {contractInfo?.package_hash}</p>
+      <p>Governor contract hash: {contractInfo?.contract_hash}</p>
       <p>Current pub key: {pubKey.pubKey}</p>
-      <p>Contract package hash: {contractInfo?.package_hash}</p>
-      <p>Contract hash: {contractInfo?.contract_hash}</p>
       <Wallet
         pubKey={pubKey}
         setKey={setKey}

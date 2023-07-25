@@ -24,7 +24,8 @@ export async function queryDeployedGovernor(): Promise<IDeployedGovernor> {
 export async function queryProposals(): Promise<IProposals> {
   try {
 
-    const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
+    // const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
+    const resp = await axios.get<IProposals>("http://localhost:8080/debug/proposals");
     return resp.data
   } catch (e) {
     console.error(e)
