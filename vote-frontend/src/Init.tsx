@@ -42,7 +42,6 @@ export const Init: React.FC<{
       throw new Error(`Failed to find contract hash for package hash ${packageHash}`)
     }
 
-    DeployUtil.
     contractHash = contractHash!.replace("contract-", "hash-");
     contractClient.setContractHash(contractHash);
     setContractInfo({
