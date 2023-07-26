@@ -3,6 +3,7 @@ version: '3'
 services:
   mynctl:
     image: makesoftware/casper-nctl:v151
+    # image: makesoftware/casper-nctl:v152
     container_name: mynctl
     ports:
       - 11101-11105:11101-11105 # RPC

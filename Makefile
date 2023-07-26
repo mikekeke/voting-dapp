@@ -1,6 +1,9 @@
 nctl-up:
 	cd nctl-docker && docker compose up
 
+nctl-up-cors-d:
+	cd nctl-docker && docker compose --profile cors-anywhere up -d
+
 nctl-up-detach:
 	cd nctl-docker && docker compose up -d
 

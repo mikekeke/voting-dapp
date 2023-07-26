@@ -7,6 +7,7 @@ const DEPLOY_COST: u64 = 155_000_000_000;
 const PROPOSAL_COST: u64 = 4_000_000_000;
 
 fn main() {
+    // panic!("Disabled");
     client_env::set_gas(DEPLOY_COST);
     let mut governor = GovernorDeployer::init("test".to_string());
 
@@ -23,6 +24,9 @@ fn main() {
 
     client_env::set_gas(PROPOSAL_COST);
     governor.new_proposal("Second proposal".to_string(), contract_data.clone());
+
+    let p0 = governor.get_proposal(0);
+    println!("Proposal 0: {:#?}", p0);
 
     DeployedGovernor::new(governor.address().to_string()).save_to_file("./../governor.json");
 }

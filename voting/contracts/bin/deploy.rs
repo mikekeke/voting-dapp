@@ -6,6 +6,7 @@ use contracts::{deployed_contracts::DeployedGovernor, governor::GovernorDeployer
 const DEPLOY_COST: u64 = 155_000_000_000;
 
 fn main() {
+    // panic!("Disabled");
     //todo: get name from CLI
     let name = String::from("Test name");
     client_env::set_gas(DEPLOY_COST);

@@ -21,7 +21,8 @@ test-w-casper:
 	cd contracts && cargo odra test -b casper
 
 run-query-service:
-	cd query-service && cargo run
+	cp contracts/.env query-service/ \
+	&& cd query-service && cargo run
 
 build-query-service:
 	cd query-service && cargo build
