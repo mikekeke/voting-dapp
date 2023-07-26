@@ -8,23 +8,24 @@ export const PROPOSAL_GAS = "5000000000";
 export const VOTE_GAS = "2500000000";
 export const FINALIZE_GAS = "3000000000";
 
-export const NODE_URL = 'http://94.130.10.55:7777';
-export const NETWORK_NAME = 'casper-test';
+export const NODE_URL = 'http://localhost:3001/http://localhost:11101';
+// export const NODE_URL = 'http://localhost:11101';
+export const NETWORK_NAME = 'casper-net-1';
 
 export const casperClient = new casperJsSdk.CasperClient(NODE_URL);
-export const rpcClient = new casperJsSdk.CasperServiceByJsonRPC('http://94.130.10.55:7777/rpc');
 export const contractClient = new casperJsSdk.Contracts.Contract(casperClient);
 
 export const QUERY_SERVICE_URL = "http://localhost:8080"
 
 export async function queryDeployedGovernor(): Promise<IDeployedGovernor> {
+  console.log("Query deployed governor")
   let resp = await axios.get<IDeployedGovernor>("http://localhost:8080/governor")
   return resp.data
 }
 
 export async function queryProposals(): Promise<IProposals> {
   try {
-
+    console.log("Query proposals")
     const resp = await axios.get<IProposals>("http://localhost:8080/proposals");
     // const resp = await axios.get<IProposals>("http://localhost:8080/debug/proposals");
     return resp.data
@@ -37,8 +38,6 @@ export async function queryProposals(): Promise<IProposals> {
 export async function signAndSubmitDeploy(deploy: casperJsSdk.DeployUtil.Deploy, keyHash: string) {
   console.log(`Signing deploy`)
   const signedDeploy = await signDeploy(deploy, keyHash);
-
-  console.log(JSON.stringify(casperJsSdk.DeployUtil.deployToJson(signedDeploy)));
 
   console.log(`Sending deploy to the network "${NETWORK_NAME}"...`)
   const deployHash = await casperClient.putDeploy(signedDeploy);

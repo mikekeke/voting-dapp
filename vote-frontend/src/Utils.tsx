@@ -7,6 +7,22 @@ import {
 } from "casper-js-sdk";
 
 
+
+export function theKeys(): Keys.AsymmetricKey { 
+  return adminKeys();
+  // return userTwoKeys();
+}
+
+
+export function adminKeys(): Keys.AsymmetricKey {
+  const privateKey = Keys.Ed25519.parsePrivateKey(
+    decodeBase64("MC4CAQAwBQYDK2VwBCIEIFQo20xQWRoFA0bRdVvLY6zpoiUkbeVPMihbP0zZ9rEg"));
+  return Keys.Ed25519.parseKeyPair(
+    Keys.Ed25519.privateToPublicKey(privateKey),
+    privateKey
+  )
+}
+
 export function userTwoKeys(): Keys.AsymmetricKey {
   const privateKey = Keys.Ed25519.parsePrivateKey(
     decodeBase64("MC4CAQAwBQYDK2VwBCIEIJ3WEDyVs7vJpLbBtrsqSeOBAZaX9q0lCiGKYtGzqXgF"));

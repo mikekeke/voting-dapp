@@ -1,7 +1,7 @@
 import { IContractInfo, ICurrentKey } from './AppTypes'
-import { userTwoKeys } from './Utils';
 import { casperClient, contractClient, queryDeployedGovernor } from './CasperNetwork';
 import { DeployUtil } from 'casper-js-sdk';
+import { theKeys } from './Utils';
 
 
 // const CasperWalletProvider = window.CasperWalletProvider;
@@ -27,7 +27,7 @@ export const Init: React.FC<{
     // setKey(keyHash)
 
     // todo: fake keys; should get it from wallet extension
-    const keyHash = userTwoKeys().publicKey.toHex();
+    const keyHash = theKeys().publicKey.toHex();
     setKey(keyHash)
 
     // set package and contract hash

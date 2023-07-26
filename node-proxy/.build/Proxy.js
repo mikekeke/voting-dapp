@@ -1,12 +1,13 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-// import express from 'express';
-const express = require('express');
-const http_proxy_middleware_1 = require("http-proxy-middleware");
-const app = express();
-app.use('/rpc', (0, http_proxy_middleware_1.createProxyMiddleware)({
-    // target: 'http://localhost:11101',
-    target: 'https://rpc.integration.casperlabs.io',
-    changeOrigin: true
-}));
-app.listen(3001);
+// Listen on a specific host via the HOST environment variable
+var host = process.env.HOST || '0.0.0.0';
+// Listen on a specific port via the PORT environment variable
+var port = process.env.PORT || 3001;
+var cors_proxy = require('cors-anywhere');
+cors_proxy.createServer({
+    originWhitelist: [],
+    requireHeader: ['origin', 'x-requested-with'],
+    removeHeaders: ['cookie', 'cookie2']
+}).listen(port, host, function () {
+    console.log('Running CORS Anywhere on ' + host + ':' + port);
+});
