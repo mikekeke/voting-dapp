@@ -1,6 +1,5 @@
 import { ContractWASM, CEP18Client, InstallArgs, EVENTS_MODE } from 'casper-cep18-js-client';
-import { findKey, readKeys } from "./Utils";
-import { CasperClient, RuntimeArgs } from 'casper-js-sdk';
+import { CLPublicKey, CasperClient } from 'casper-js-sdk';
 import { AsymmetricKey } from 'casper-js-sdk/dist/lib/Keys';
 
 const DEPLOY_GAS_PRICE = 330560983230;
@@ -64,4 +63,18 @@ export async function deployTokensContract(
   console.log(`Deploying fungible tokens contract deployed`);
   return cep18
 
+}
+
+export async function findKey(
+  casperClient: CasperClient,
+  contractAccount: CLPublicKey, contractKey: string): Promise<string | undefined> {
+  const rootHash = await casperClient.nodeClient.getStateRootHash()
+  const accountHash = contractAccount.toAccountHashStr()
+  const state = await casperClient.nodeClient
+    .getBlockState(rootHash, accountHash, [])
+  return state
+    .Account
+    ?.namedKeys
+    .find(key => key.name === contractKey)
+    ?.key
 }
