@@ -42,7 +42,7 @@ export async function signAndSubmitDeploy(deploy: casperJsSdk.DeployUtil.Deploy,
   console.log(`Signing deploy`)
   const signedDeploy = await signDeploy(deploy, keyHash);
   console.log("sleep");
-  await sleep(3000); //!magic: w/o it getting `Invalid deploy` error; could be timestamp related?
+  await sleep(1000); //!magic: w/o it getting `Invalid deploy` error; could be timestamp related?
   console.log("put");
   console.log(`Sending deploy to the network "${NETWORK_NAME}"...`)
   const deployHash = await casperClient.putDeploy(signedDeploy);
