@@ -1,4 +1,4 @@
-export PUB_HEX="/home/mike/casper-project/test-1-ed25519-keys/public_key_hex"
-export SECRET_KEY="/home/mike/casper-project/test-1-ed25519-keys/secret_key.pem"
+export PUB_HEX="../testnet-keys/user-1/public_key_hex"
+export SECRET_KEY="../testnet-keys/user-1/secret_key.pem"
 export NODE_ADDR="http://94.130.10.55:7777"
 export NETWORK="casper-test"
