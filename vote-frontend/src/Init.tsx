@@ -1,5 +1,5 @@
 import { IContractInfo } from './AppTypes'
-import { casperClient, contractClient, queryDeployedGovernor, walletProvider } from './CasperNetwork';
+import { governorContract, queryDeployedGovernor, walletProvider } from './CasperNetwork';
 import { USE_CASPER_WALLET } from './Settings';
 import { theKeys } from './Utils';
 
@@ -28,8 +28,8 @@ export const Init: React.FC<{
     // setting package and contract hash
     const deployedGovernor = await queryDeployedGovernor();
     const packageHash = deployedGovernor.package_hash;
-    const rootHash = await casperClient.nodeClient.getStateRootHash();
-    let contractHash = await casperClient.nodeClient
+    const rootHash = await governorContract.casperClient.nodeClient.getStateRootHash();
+    let contractHash = await governorContract.casperClient.nodeClient
       .getBlockState(rootHash, packageHash, [])
       .then(p => p.ContractPackage?.versions[0].contractHash);
 
@@ -38,7 +38,7 @@ export const Init: React.FC<{
     }
 
     contractHash = contractHash!.replace("contract-", "hash-");
-    contractClient.setContractHash(contractHash);
+    governorContract.setContractHash(contractHash);
     setContractInfo({
       package_hash: packageHash,
       contract_hash: contractHash

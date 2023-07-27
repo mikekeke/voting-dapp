@@ -1,19 +1,10 @@
-import {
-  RuntimeArgs,
-  CLPublicKey,
-  CLValueBuilder,
-
-} from "casper-js-sdk";
 import { ICurrentKey } from "./AppTypes";
-import { contractClient, NETWORK_NAME, signAndSubmitDeploy, VOTE_GAS } from './CasperNetwork'
+import { governorContract, magicSleep, signDeploy, } from './CasperNetwork'
+import { Vote } from "./GovernorClient";
 
-enum Vote {
-  Yea = '"yea"',
-  Nay = '"nay"'
-}
-
-export const Voting: React.FC<{ pubKey: ICurrentKey, proposalId: number }> = ({ pubKey, proposalId }) => {
-
+export const Voting: React.FC<{
+  pubKey: ICurrentKey, proposalId: number
+}> = ({ pubKey, proposalId }) => {
   return (
     <div>
       <button onClick={() => {
@@ -26,10 +17,6 @@ export const Voting: React.FC<{ pubKey: ICurrentKey, proposalId: number }> = ({ 
   );
 };
 
-// todo: important
-// const CasperWalletProvider = window.CasperWalletProvider;
-// const provider = CasperWalletProvider();
-
 async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
   console.log(`Voting ${vote} for proposal ${proposalId}`);
 
@@ -39,18 +26,10 @@ async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
 
   const keyHash = iPubKey.pubKey!;
 
-  const endpoint = vote === Vote.Yea ? "vote_for" : "vote_against";
-
-  // todo: should be extracted to some contract client
-  const deploy = contractClient.callEntrypoint(
-    endpoint,
-    RuntimeArgs.fromMap({ proposal_id: CLValueBuilder.u64(proposalId) }),
-    CLPublicKey.fromHex(keyHash),
-    NETWORK_NAME,
-    VOTE_GAS,
-  );
-
-  const [success, failure] = await signAndSubmitDeploy(deploy, keyHash);
+  const deploy = governorContract.vote(proposalId, vote, keyHash);
+  const signedDeploy = await signDeploy(deploy, keyHash);
+  magicSleep(1000);
+  const [success, failure] = await governorContract.putDeploy(signedDeploy, keyHash);
   if (failure) {
     let msg =
       failure!.error_message === "User error: 0"
@@ -58,15 +37,15 @@ async function vote(iPubKey: ICurrentKey, proposalId: number, vote: Vote) {
         : failure!.error_message;
 
     msg = `Failed to vote: ${msg}`;
-    alert(msg);
     console.error(msg);
+    alert(msg);
   } else {
-    alert(`Voted successfully for ${proposalId}!`);
     console.log(`Voted successfully for ${proposalId}`);
     console.log({
       proposalId: proposalId,
       keyHash: keyHash,
       result: success
     });
+    alert(`Voted successfully for ${proposalId}!`);
   }
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ICurrentKey } from "./AppTypes";
-import { NETWORK_NAME, PROPOSAL_GAS, contractClient, signAndSubmitDeploy } from "./CasperNetwork";
-import { CLPublicKey, CLValueBuilder, RuntimeArgs, encodeBase16 } from "casper-js-sdk";
+import { governorContract, magicSleep, signDeploy } from "./CasperNetwork";
+import { CLValueBuilder, RuntimeArgs, encodeBase16 } from "casper-js-sdk";
 
 export const NewProposal: React.FC<{ pubKey: ICurrentKey }> = ({ pubKey }) => {
   const [proposal, setProposal] = useState<string>("");
@@ -82,26 +82,18 @@ async function submit(
 
   );
 
-  const deploy = contractClient.callEntrypoint(
-    "new_proposal",
-    RuntimeArgs.fromMap({
-      statement: CLValueBuilder.string(proposal),
-      call_data: callData
-    }),
-    CLPublicKey.fromHex(keyHash),
-    NETWORK_NAME,
-    PROPOSAL_GAS,
-  );
-
-  const [success, failure] = await signAndSubmitDeploy(deploy, keyHash);
+  const deploy = governorContract.newProposal(proposal, keyHash, callData);
+  const signedDeploy = await signDeploy(deploy, keyHash);
+  magicSleep(1000);
+  const [success, failure] = await governorContract.putDeploy(signedDeploy, keyHash);
   if (failure) {
     let msg = failure!.error_message === "User error: 0" ? 'you voted already' : failure!.error_message;
     msg = `Failed to submit proposal: ${msg}`;
-    alert(msg);
     console.error(msg);
+    alert(msg);
   } else {
-    alert(`Proposal created!`);
     console.log(`Proposal created`);
+    alert(`Proposal created!`);
 
     console.log({
       keyHash: keyHash,

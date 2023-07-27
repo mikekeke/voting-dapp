@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import { Proposals } from './Proposals';
 import { IContractInfo, ICurrentKey } from './AppTypes'
 import { Init } from './Init';
-import { casperClient, contractClient, queryDeployedGovernor } from './CasperNetwork'
 import { NewProposal } from './NewProposal';
 
 declare global {
