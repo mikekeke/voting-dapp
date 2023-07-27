@@ -1,36 +1,31 @@
-import { IContractInfo, ICurrentKey } from './AppTypes'
-import { casperClient, contractClient, queryDeployedGovernor } from './CasperNetwork';
-import { DeployUtil } from 'casper-js-sdk';
+import { IContractInfo } from './AppTypes'
+import { casperClient, contractClient, queryDeployedGovernor, walletProvider } from './CasperNetwork';
+import { USE_CASPER_WALLET } from './Settings';
 import { theKeys } from './Utils';
 
-
-// const CasperWalletProvider = window.CasperWalletProvider;
-
-// const provider = CasperWalletProvider();
-
+/*
+ Init app state required to call contracts:
+ - connects to wallet extension or parse predefined keys from base64
+ - quires package hash fro query service id finds contract hash 
+   (coz JS SDK needs contract hash to call contract, not package hash like Odra) 
+*/
 export const Init: React.FC<{
-  pubKey: ICurrentKey,
   setKey: (keyHash: string) => void,
   setContractInfo: (info: IContractInfo) => void,
-}> = ({ pubKey, setKey, setContractInfo }) => {
+}> = ({ setKey, setContractInfo }) => {
 
   return (
-    <button onClick={() => { connect().catch(err => alert(err)) }}>Connect to wallet</button>
+    <button onClick={() => { init().catch(err => alert(err)) }}>
+      Init
+    </button>
   )
 
-  async function connect() {
-    // const connected: boolean = await provider.requestConnection();
-    // if (!connected) {
-    //   throw new Error("Could not connect to wallet")
-    // }
-    // const keyHash: string = await provider.getActivePublicKey();
-    // setKey(keyHash)
+  async function init() {
+    // setting pub key hash
+    const keyHash: string = await currentPubKeyHash();
+    setKey(keyHash);
 
-    // todo: fake keys; should get it from wallet extension
-    const keyHash = theKeys().publicKey.toHex();
-    setKey(keyHash)
-
-    // set package and contract hash
+    // setting package and contract hash
     const deployedGovernor = await queryDeployedGovernor();
     const packageHash = deployedGovernor.package_hash;
     const rootHash = await casperClient.nodeClient.getStateRootHash();
@@ -50,3 +45,16 @@ export const Init: React.FC<{
     })
   }
 };
+
+async function currentPubKeyHash() {
+  if (USE_CASPER_WALLET) {
+    const connected: boolean = await walletProvider.requestConnection();
+    if (!connected) {
+      throw new Error("Could not connect to wallet")
+    }
+    const keyHash: string = await walletProvider.getActivePublicKey();
+    return keyHash
+  } else {
+    return theKeys().publicKey.toHex();
+  }
+}

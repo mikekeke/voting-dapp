@@ -26,7 +26,6 @@ function App() {
       <p>Governor contract hash: {contractInfo?.contract_hash}</p>
       <p>Current pub key: {pubKey.pubKey}</p>
       <Init
-        pubKey={pubKey}
         setKey={setKey}
         setContractInfo={setContractInfo}
       />
