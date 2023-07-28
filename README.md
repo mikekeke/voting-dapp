@@ -26,7 +26,9 @@
       - [Step 4 - deploy governor](#step-4---deploy-governor)
       - [Step 5 - query service](#step-5---query-service)
       - [Step 6 - 3d-party-contract](#step-6---3d-party-contract)
-      - [Step 7 - proxy](#step-7---proxy)
+      - [Step 7 - node proxy](#step-7---node-proxy)
+      - [Step 8 - frontend](#step-8---frontend)
+      - [Step 9 - interact with the contract](#step-9---interact-with-the-contract)
 
 ## Project description
 
@@ -253,6 +255,92 @@ This is the hash we will need later.
 
 (Leave this terminal open - we will need it 🙂)
 
-#### Step 7 - proxy
+#### Step 7 - node proxy
 
 Casper nodes require CORS. It was told by developers, that starting from version `1.5` cors will be removed, and it was indeed till `1.5.2`. At the current moment testnet nodes run `1.5.2`, so CORS is back.
+
+The easiest way to deal with CORS I;ve found at least for development, is to use small TS server with `cors-anywhere`.
+
+You can see in the frontend repo in [Settings.ts](./voting-frontend/src/Settings.ts) `NODE_URL` is specified as an url for proxy server with node url as an argument. This allows to use node  and contract clients provided by `casper-js-sdk` as is at the fronted w/o writing whole bunch of own code.
+
+Perhaps, this proxy can be merged with `query-service`, but if Odra team will release `WASM` contract client mentioned in `Other possible variants` of [Odra cons section](#odra-cons), there will be no need in `query-service`. So I went with standalone proxy for now.
+
+Leave it running.
+
+#### Step 8 - frontend
+
+Switch to [voting-frontend dir](./voting-frontend/).
+
+Run
+
+```
+npm start
+```
+
+or to prevent default browser launch
+
+```
+BROWSER="none" npm start 
+```
+
+Frontend app will start at `http://localhost:3000/`. You should see couple text fields and form with button there.
+
+Frontend requires governor contract deployed, `proxy` and `query-service` running. If you want to test contract execution, then `3d-party-contract` should be deployed also. If you followed all steps in order, everything should be prepared already.
+
+#### Step 9 - interact with the contract
+
+After frontend is launched, 1st thing you should to is to click `Init` button. Then following happens:
+
+- App will request access to Casper account and set required data to the state. Casper Wallet will open asking to choose and connect account. I had no time to implement account switching according to the events from Casper Waller SDK, so if account is switched - press `Init` again. Also, when page is refreshed you may need to click `Init` to set key again - this is my bad - lacking of experience and couldn't figure out how to make it better in the time I had. Also, sometimes I see error `CasperWalletProvider is not a function` - don't know the cause, page reload w/o cache helps.
+- After key is set application will make request to `query-service` to get `package hash` of the governor contract. Then it will use `CasperClient` from `casper-js-sdk` to find `contract hash` by `package hash`. For whatever reason `Contract` client from `casper-js-sdk` needs `contract hash` to call the contract, and fails with `package hash`. Casper natively support contracts upgrade, and different versions of contracts wit different hashes are "stored under" `package hash`. So user can call specific version of contract using `package hash` and version, or just call latest version with just `package hash`. Odra uses `package hash` to call contracts, `casper-client` can use both. But `casper-js-sdk` needs `contract hash`.
+
+If everything went OK, you should see current public key hash, contract hash and package hash above of the form.
+
+Now to the proposals. Using the below you can create proposals.
+
+From left to right you can specify (there is no validation there really):
+
+- Proposal description
+- Information required to call external contract. This information will be stored on-chain as part of the proposal. Call will be executed if proposal receives majority of "YES" votes:
+  - Package hash of the contract. Remember, that Odra uses `package hash` to call contracts. So use hash acquired during [3d-party-contract-deploy](#step-6---3d-party-contract).
+  - Contract entry point to call. In case of `3d-party-contract` it will be `counter_inc`
+  - Argument for the entry point. `counter_inc` accepts number. I had no time to make it possible to pass any set of arguments supported by contract entry points though the form, so here arguments type is limited by `number`. There is no limits on smart contract side - it will accept any serialized arguments, that frontend will supply to it. But currently frontend code has only arguments required for `counter_inc` hardcoded - see [submit function in NewProposal.tsx](./voting-frontend/src/NewProposal.tsx).
+
+After form is filled, click `Add Proposal`. It will ask you to sign deploy with Casper Wallet extension and then send deploy to the node. You can monitor the process in browser console, but alert will also popup when deployment will succeed or fail.
+
+When deploy is finished, you can refresh the page so app will query proposals. They should appear under the form. From here you can one on them (one vote per key) nad then finalize voting. If proposal received majority of "YES" votes, contract call stored inside the proposal will be execute. If it fails you will see an error and proposal will stay un-finalized (with current logic).
+
+If call to the `3d-party-contract` was used (and you don't have that many options with the current frontend 🙂) and it was executed during finalization, you can check if call to `3d-party-contract` was executed successfully.
+
+Go back to `3d-party-contract` directory and from there run:
+  
+```
+./query-state.sh "counter/count"
+```
+
+You should see something like this:
+
+```
+  account-hash-b18e832a195ae7c01984f9830db5bf195e615bb335489364022a1d6525545832
+66ca03c819a00b940128682a7d2d406ef1953e3a9adbf10662af513ff7bb8cda
+{
+  "id": -6000593732474252967,
+  "jsonrpc": "2.0",
+  "result": {
+    "api_version": "1.5.2",
+    "block_header": null,
+    "merkle_proof": "[94662 hex chars]",
+    "stored_value": {
+      "CLValue": {
+        "bytes": "00000000",
+        "cl_type": "I32",
+        "parsed": 0
+      }
+    }
+  }
+}
+```
+
+The `"parsed": X` is what should change by the amount you specified in the proposal form.
+
+Now you can create more proposal, vote on them and finalize them. Just don't forget to refresh the page, as it updates only fresh query response from `query-service` (and probably you'll need to click `Init` again after that - sorry).

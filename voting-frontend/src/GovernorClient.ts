@@ -61,6 +61,7 @@ export class Governor {
     console.log(`Sending deploy to the network "${this.networkName}"...`)
     const deployHash = await this.casperClient.putDeploy(signedDeploy);
     console.log(`Deploy hash: ${deployHash}`);
+    console.log(`Waiting for deployment to finish...`);
     const result = await this.casperClient.nodeClient.waitForDeploy(signedDeploy);
     const failure = result.execution_results[0].result.Failure;
     const success = result.execution_results[0].result.Success;
