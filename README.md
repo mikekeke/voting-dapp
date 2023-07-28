@@ -25,8 +25,8 @@
       - [Step 3 - prepare environment](#step-3---prepare-environment)
       - [Step 4 - deploy governor](#step-4---deploy-governor)
       - [Step 5 - query service](#step-5---query-service)
-      - [Step 6 - 3d-party-contract](#step-6---3d-party-contract)
-      - [Step 7 - node proxy](#step-7---node-proxy)
+      - [Step 6 - node proxy](#step-6---node-proxy)
+      - [Step 7 - 3d-party-contract](#step-7---3d-party-contract)
       - [Step 8 - frontend](#step-8---frontend)
       - [Step 9 - interact with the contract](#step-9---interact-with-the-contract)
 
@@ -131,6 +131,8 @@ If you want to "reset" state of the contracts described below, just re-deploy th
 
 ### Switching the network
 
+TODO
+
 ### Testnet deploy
 
 (Step 0: prepare a lot of terminals)
@@ -204,7 +206,19 @@ make run-query-service
 
 `query-service` uses "getters" provided by the governor contract to query node, so environment setup for `livenet` Odra feature is also required here. When `make run-query-service` is executed, it copies `.env` file from the `contracts` directory into own `query-service` directory to keep them in sync. Then it starts web-service on port `8080` built with `Actix` Rust library.
 
-#### Step 6 - 3d-party-contract
+#### Step 6 - node proxy
+
+Casper nodes require CORS. It was told by developers, that starting from version `1.5` cors will be removed, and it was indeed till `1.5.2`. At the current moment testnet nodes run `1.5.2`, so CORS is back.
+
+The easiest way to deal with CORS I;ve found at least for development, is to use small TS server with `cors-anywhere`.
+
+You can see in the frontend repo in [Settings.ts](./voting-frontend/src/Settings.ts) `NODE_URL` is specified as an url for proxy server with node url as an argument. This allows to use node  and contract clients provided by `casper-js-sdk` as is at the fronted w/o writing whole bunch of own code.
+
+Perhaps, this proxy can be merged with `query-service`, but if Odra team will release `WASM` contract client mentioned in `Other possible variants` of [Odra cons section](#odra-cons), there will be no need in `query-service`. So I went with standalone proxy for now.
+
+Leave it running.
+
+#### Step 7 - 3d-party-contract
 
 3d-party contract can be used to test arbitrary contract execution as the result of voting. It is written in low-level Casper and mull code included for reference in [main.rs file](./3d-party-contract/main.rs).
 
@@ -254,18 +268,6 @@ Look `named_keys` for something like this:
 This is the hash we will need later.
 
 (Leave this terminal open - we will need it 🙂)
-
-#### Step 7 - node proxy
-
-Casper nodes require CORS. It was told by developers, that starting from version `1.5` cors will be removed, and it was indeed till `1.5.2`. At the current moment testnet nodes run `1.5.2`, so CORS is back.
-
-The easiest way to deal with CORS I;ve found at least for development, is to use small TS server with `cors-anywhere`.
-
-You can see in the frontend repo in [Settings.ts](./voting-frontend/src/Settings.ts) `NODE_URL` is specified as an url for proxy server with node url as an argument. This allows to use node  and contract clients provided by `casper-js-sdk` as is at the fronted w/o writing whole bunch of own code.
-
-Perhaps, this proxy can be merged with `query-service`, but if Odra team will release `WASM` contract client mentioned in `Other possible variants` of [Odra cons section](#odra-cons), there will be no need in `query-service`. So I went with standalone proxy for now.
-
-Leave it running.
 
 #### Step 8 - frontend
 
