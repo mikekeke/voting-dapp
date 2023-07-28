@@ -101,6 +101,10 @@ impl Governor {
             .unwrap_or_revert_with(Error::ContractCallDataNotFound);
         let package_hash_addr = Address::from_str(&contract_data.0).unwrap();
         let entrypoint = contract_data.1 .0;
+
+        //todo: there should be a way to accept call args as array of bytes
+        // and avoid hex decoding step here. 
+        // Need to figure out appropriate Odra type for the argument.
         let call_args =
             CallArgs::deserialize(&decode(&contract_data.1 .1).unwrap()).unwrap_or_revert();
         odra::call_contract::<()>(package_hash_addr, &entrypoint, &call_args, None);

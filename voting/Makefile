@@ -11,9 +11,6 @@ livenet-e2e:
 	&& cargo odra build -b casper \
 	&& cargo run --bin livenet-debug --features casper-livenet --no-default-features
 
-dbg-query:
-	cargo run --bin query --features casper-livenet --no-default-features
-
 test-w-mock-vm:
 	cd contracts && cargo odra test
 
