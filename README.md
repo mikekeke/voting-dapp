@@ -26,19 +26,19 @@
       - [Step 4 - deploy governor](#step-4---deploy-governor)
       - [Step 5 - query service](#step-5---query-service)
       - [Step 6 - node proxy](#step-6---node-proxy)
-      - [Step 7 - 3d-party-contract](#step-7---3d-party-contract)
-      - [Step 8 - frontend](#step-8---frontend)
+      - [Step 7 - frontend](#step-7---frontend)
+      - [Step 8 - 3d-party-contract](#step-8---3d-party-contract)
       - [Step 9 - interact with the contract](#step-9---interact-with-the-contract)
 
 ## Project description
 
-This is example of full-stack project that implements some simple DAO contract. On-chain part is written with [Odra framework](https://odra.dev/docs/) that greatly simplifies contract writing, but also have some drawbacks (see [Contract on-chain and backend section](#contract-on-chain-and-backend)). User interaction happens through React application.
+This is an example of full-stack project that implements some simple DAO contract. On-chain part is written with [Odra framework](https://odra.dev/docs/) that greatly simplifies contract writing, but also have some drawbacks (see [Contract on-chain and backend section](#contract-on-chain-and-backend)). User interaction happens through React application.
 
 After main contract is deployed on-chain users can:
 
-- Create new proposals. Currently, proposal consists of some description and 3d party arbitrary contract that can be called. On-chain and backend parts do not have any limits on what contract endpoint with what arguments can be called. But frontend UI currently have some limitations on what arguments can be passed to the contract endpoint. For more details see [Contract frontend section](#contract-frontend).
+- Create new proposals. Currently, proposal consists of some description and call to some arbitrary 3d-party contract. On-chain and backend parts do not have any limits on what contract endpoint with what arguments can be called. But frontend UI currently have some limitations on what arguments can be passed to the contract endpoint. For more details see [Contract frontend section](#contract-frontend).
 - Vote on created proposals. There are no restrictions at the moment and anybody can vote, but only one time per proposal. The initial idea was to allow user to vote according their stake represented by some ERC20 standard token, but it was omitted due to development time limitations.
-- Close voting. No limits here currently again - anybody can close voting. But if proposal receives majority of "YES" votes, contract inside proposal will be executed, and the one who closes voting will need to pay gas price for whatever was executed there.
+- Close voting. No access limits here currently too - anybody can close voting. If proposal receives majority of "YES" votes, contract inside proposal will be executed, and the one who closes the voting will need to pay gas price for whatever was executed there.
 
 ## Repo structure
 
@@ -48,7 +48,7 @@ Simple contract that will be used for the demo purposes. Contract is written in 
 
 ### nctl-docker
 
-Docker image to start local private network using `nctl` tool provided by the Casper ecosystem. There are `Make` commands available to start, stop, restart network and to copy predefined funded keys. Keys are copied already and into [nctl-docker/users](./nctl-docker/users/) directory, but if node version changes old keys may stop working. Node version set through [docker-compose file](./nctl-docker/docker-compose.yaml).
+Docker image to start local private network using `nctl` tool provided by the Casper ecosystem. There are `Make` commands available to start, stop, restart network and to copy predefined funded keys. Keys are copied already into [nctl-docker/users](./nctl-docker/users/) directory, but if node version changes old keys may stop working. Node version is set through the [docker-compose file](./nctl-docker/docker-compose.yaml).
 
 ### node-proxy
 
@@ -56,48 +56,48 @@ TypeScript proxy server. Casper nodes require CORS. This proxy server solves the
 
 ### testnet-keys
 
-Funded keys on `testnet` network. Can be imported to `Casper Wallet` browser extension.
+Funded keys on `testnet` network. Can be imported into `Casper Wallet` browser extension.
 
 ### voting
 
 Contains two Rust packages:
-- Smart DAO smart contract and deployer for it implemented using Odra framework
-- Query service to query network global state
+- DAO smart contract and deployer for it implemented using Odra framework
+- Query service to query network global state related to the contract
 
 For more details see [Contract on-chain and backend section](#contract-on-chain-and-backend)
 
 ### voting-frontend
 
-React app with basic UI that allows to create new proposals, vote on them and close them. [Contract frontend section](#contract-on-chain-and-backend).
+React app with basic UI that allows to create new proposals, vote on them and close them. See [Contract frontend section](#contract-on-chain-and-backend).
 
 ## Contract on-chain and backend
 
-Smart contract is implemented using [Odra framework](https://odra.dev/docs/). Odra abstracts away all low-level Casper code and generates query layer for on-chain global state related to the contract and also generates `Deployers` that can contract endpoints on real network.
+Smart contract is implemented using [Odra framework](https://odra.dev/docs/). Odra abstracts away all low-level Casper code. It also generates contract `Deployer` that provide reference object after contract is deployed. This reference object can be used to call contract entry points and query global state fo the contract in tests and with real network.
 
 ### Odra framework
-A bigger example of using Odra framework in some core ecosystem project: [Casper DAO contracts](https://github.com/make-software/dao-contracts)
+A bigger example of using Odra framework in some core ecosystem project: [Casper DAO contracts](https://github.com/make-software/dao-contracts).
 
 #### Odra pros
 
 - A lot of low-level code is abstracted away. In bigger projects you will probably want to abstract out low-level Casper code anyway to not to write a lot of boilerplate. So Odra gives you that already.
 - Code looks more like plain Rust: contract is `struct` and contract endpoints are public methods of `impl`. All storage interactions also hidden behind `struct` fields that mimics regular types like variables of type `T`, lists, maps and etc..
-- Tests are kept in the same `.rs` file as in regular Rust code, not in the separate package like in `vanilla` casper examples. It also possible to test either with Odra mock VM aor with "official" casper mock VM. Odra tests gives slightly better error messages (but I'd go with Casper VM tests followed by E2E test on local private network as a final check).
+- Tests are kept in the same `.rs` file as in regular Rust code, not in the separate package like in "vanilla" casper examples. It is also possible to run tests either with Odra mock VM or with "official" casper mock VM. Odra tests gives slightly better error messages (but I'd go with Casper VM tests followed by E2E test on local private network as a final check).
 - `Deployer` is generated for each contract. It gives simple abstraction for calling contract entry points - they are called just as regular methods via dot-notation. `livenet` feature allows to deploy and call contract on real network.
 - Has events support build-in with some quality of life improvements (uses [casper-event-standard](https://github.com/make-software/casper-event-standard))
 
 #### Odra cons
 
-Names of `NamedKeys` and `Dictionary` keys used to store data on-chain are not transparent. With low-level Casper code contract author defines set of constants for `NamedKeys` names and name of the `Dictionaries` he uses. All that names can be be found in the source code and checked. Odra from the other side stores all contract's is single `Dictionary` (currently it is called `state`) and names generation is hidden from the developer.
+Names of `NamedKeys` and `Dictionary` keys used to store data on-chain are not transparent. In case of low-level Casper code contract, developer defines set of string constants for `NamedKeys` names and name of the `Dictionaries` to use fro contract state. All that names can be found in the source code and checked on-chain. Odra from the other side stores whole contract state in a single `Dictionary` (currently it is called `state`) and names generation is hidden from the developer.
 
-At the moment, if contract `struct` has `Variable`, the value is stored inside this `state` dictionary, and name for the key is generated by concatenating contract name with variable name and then converted to bytes and hashed. Encoded hash is used as a key for on-chain storage. If one contract has another contract as its field, then both contract names are concatenated and then variable name added to them, converted to bytes and hashed. If something is stored in the `Mapping`, then name of the field that is used for `Mapping` in contract `struct` becomes "dictionary" name, and when something is added into `Mapping`, contract name is concatenated with `Mapping` field name ("dictionary" name), converted to bytes and hashed, then the key that user uses to store data in `Mapping` also converted to bytes and added to hash. Then hash is encoded and resulted value used as a key name for on-chain `state` `Dictionary` (so it sort of like Redis keys namespaces, but also hashed).
+At the moment, if contract `struct` has `Variable`, the value is stored inside this `state` dictionary, and name for the key is generated by concatenating contract name with variable name and then converted to bytes and hashed. Hex-encoded hash is then used as a key in `state` `Dictionary`. If one contract has another contract as its field, then both contract names are concatenated and then variable name added to them, converted to bytes and hashed. If something is stored in the `Mapping`, then name of the field that is used for `Mapping` in contract `struct` becomes "dictionary" name, and when something is added into `Mapping`, contract name is concatenated with `Mapping` field name ("dictionary" name), converted to bytes and hashed, then the key that user uses to store the data in `Mapping` also converted to bytes and added to hash. Then hash is hex-encoded and resulted value used as a key name for on-chain `state` `Dictionary` (so it sort of like Redis keys namespaces, but also hashed).
 
-Sources for v0.4.0 can be found [here](https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/shared/src/key_maker.rs#L12) and [here](https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/livenet/src/casper_client.rs#L397).
+Sources of how keys are made for v0.4.0 can be found [here](https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/shared/src/key_maker.rs#L12) and [here](https://github.com/odradev/odra/blob/release/0.4.0/odra-casper/livenet/src/casper_client.rs#L397).
 
-The problem is that algorithm of keys generation is hidden from the contract developer and is subject to change. It makes querying data from chain less straightforward. Although it is possible to recreate keys creation in, say, React application (and it was tested and works), algorithm of key creation may change in the future (Odra devs also warns about it).
+The problem is that algorithm of keys generation is hidden from the contract developer and is subject to change. It makes querying data from chain less straightforward. Although it is possible to recreate keys creation in, say, React application (and it was tested and worked), algorithm of key creation may change in the future (Odra devs also warn about this possibility).
 
-From the other side, it is possible to use `getters` in contract `impl` to read values from the contract `struct` fields. Odra will generate `Deployer` for each contract and this methods will be available through the contract reference that `Deployer` returns after contract initialization. Those getters are just wrappers around JSON RPC requests to the node and does not require any gas to be called. Now the question is - how to get those getters available for the front-end.
+From the other side, it is possible to use `getters` in contract `impl` to read values from the contract `struct` fields. Odra will generate `Deployer` for each contract and "getter" methods will be available through the contract reference that `Deployer` returns after contract initialization. Those getters are just wrappers around JSON RPC requests to the node and does not require any gas to be called. Now the question is - how to get those getters available for the front-end.
 
-With current Odra version `0.4.0` there is no out-of-the box solution. Current solution was to write simple [web-service](./voting/query-service/) that provides REST API on top of contract "getters".
+With current Odra version `0.4.0` there is no out-of-the box solution. Current solution was to write simple [web-service (query-service)](./voting/query-service/) that provides REST API on top of contract "getters".
 
 Other possible variants:
 - In release `0.6.0` Odra team plans to add [WASM client](https://github.com/odradev/odra/issues/202) which will be auto-generated from the contract getters (or maybe straight from struct fields) and can be run in the browser.
@@ -105,7 +105,7 @@ Other possible variants:
 
 ### Codebase
 
-The [root directory](./voting) of Contract on-chain and backend has own Makefile. Commands there allow to build contracts, test them both with Odra-mock and Casper VMs, build and run query service, deploy contract via `livenet` feature and run E2E test. There will be more details on deployment in [Deploying the project section](#deploying-the-project).
+The [root directory](./voting) of Contract on-chain and backend has own Makefile. Commands there allow to build contracts, test them both with Odra-mock and Casper VMs, build and run query service, deploy contract via Odra `livenet` feature and run E2E test. There will be more details on deployment in [Deploying the project section](#deploying-the-project).
 
 Currently contract does not use any Events.
 
@@ -131,7 +131,10 @@ If you want to "reset" state of the contracts described below, just re-deploy th
 
 ### Switching the network
 
-TODO
+To switch current setup from the testnet several changes are required:
+
+- Change data [.env file in contract dir](./voting/contracts/.env) to use correct network name, node address and proper key. E.g., [data for NCTL local network](./voting/contracts/.env.ln). `query-service` will copy and use this file if started via `make` command.
+- Change [frontend settings](./voting-frontend/src/Settings.ts) accordingly. Important: for `NODE_URL` change only the part after the proxy url, e.g. for NTCL docker setup it will be `NODE_URL = 'http://localhost:3001/http://localhost:11101'`, and if you are using local network, then switch `USE_CASPER_WALLET` to `false`, as Casper Wallet extension can not connect to the custom network - deployments will be auto-signed with the key from [Utils.theKeys()](./voting-frontend/src/Utils.tsx#9)
 
 ### Testnet deploy
 
@@ -218,7 +221,27 @@ Perhaps, this proxy can be merged with `query-service`, but if Odra team will re
 
 Leave it running.
 
-#### Step 7 - 3d-party-contract
+#### Step 7 - frontend
+
+Switch to [voting-frontend dir](./voting-frontend/).
+
+Run
+
+```
+npm start
+```
+
+or to prevent default browser launch
+
+```
+BROWSER="none" npm start 
+```
+
+Frontend app will start at `http://localhost:3000/`. You should see couple text fields and form with button there.
+
+Frontend requires governor contract deployed, `proxy` and `query-service` running. If you want to test contract execution, then `3d-party-contract` should be deployed also. If you followed all steps in order, everything should be prepared already.
+
+#### Step 8 - 3d-party-contract
 
 3d-party contract can be used to test arbitrary contract execution as the result of voting. It is written in low-level Casper and mull code included for reference in [main.rs file](./3d-party-contract/main.rs).
 
@@ -269,26 +292,6 @@ This is the hash we will need later.
 
 (Leave this terminal open - we will need it 🙂)
 
-#### Step 8 - frontend
-
-Switch to [voting-frontend dir](./voting-frontend/).
-
-Run
-
-```
-npm start
-```
-
-or to prevent default browser launch
-
-```
-BROWSER="none" npm start 
-```
-
-Frontend app will start at `http://localhost:3000/`. You should see couple text fields and form with button there.
-
-Frontend requires governor contract deployed, `proxy` and `query-service` running. If you want to test contract execution, then `3d-party-contract` should be deployed also. If you followed all steps in order, everything should be prepared already.
-
 #### Step 9 - interact with the contract
 
 After frontend is launched, 1st thing you should to is to click `Init` button. Then following happens:
@@ -304,7 +307,7 @@ From left to right you can specify (there is no validation there really):
 
 - Proposal description
 - Information required to call external contract. This information will be stored on-chain as part of the proposal. Call will be executed if proposal receives majority of "YES" votes:
-  - Package hash of the contract. Remember, that Odra uses `package hash` to call contracts. So use hash acquired during [3d-party-contract-deploy](#step-6---3d-party-contract).
+  - Package hash of the contract. Remember, that Odra uses `package hash` to call contracts. So use hash acquired during [3d-party-contract-deploy](#step-8---3d-party-contract).
   - Contract entry point to call. In case of `3d-party-contract` it will be `counter_inc`
   - Argument for the entry point. `counter_inc` accepts number. I had no time to make it possible to pass any set of arguments supported by contract entry points though the form, so here arguments type is limited by `number`. There is no limits on smart contract side - it will accept any serialized arguments, that frontend will supply to it. But currently frontend code has only arguments required for `counter_inc` hardcoded - see [submit function in NewProposal.tsx](./voting-frontend/src/NewProposal.tsx).
 
